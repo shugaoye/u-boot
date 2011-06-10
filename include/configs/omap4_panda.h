@@ -55,6 +55,19 @@
 #define CONFIG_USB_ULPI
 #define CONFIG_USB_ULPI_VIEWPORT_OMAP
 
+/* BOOTP options */
+#define CONFIG_BOOTP_BOOTFILESIZE
+#define CONFIG_BOOTP_BOOTPATH
+#define CONFIG_BOOTP_GATEWAY
+#define CONFIG_BOOTP_HOSTNAME
+
+/* PXE */
+#define CONFIG_CMD_PXE
+#define CONFIG_MENU
+#define CONFIG_BOOTP_PXE
+#define CONFIG_BOOTP_PXE_CLIENTARCH	0x100
+#define CONFIG_BOOTP_VCI_STRING		"U-boot.armv7.omap4_panda"
+
 #include <configs/omap4_common.h>
 #define CONFIG_CMD_NET
 
