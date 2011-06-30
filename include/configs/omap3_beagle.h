@@ -273,6 +273,10 @@
 	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv=echo Importing environment from mmc ...; " \
 		"env import -t $loadaddr $filesize\0" \
+	"bootscr=boot.scr\0" \
+	"loadbootscript=fatload mmc ${mmcdev} ${loadaddr} ${bootscr}\0" \
+	"bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
+		"source ${loadaddr}\0" \
 	"ramargs=setenv bootargs console=${console} " \
 		"${optargs} " \
 		"mpurate=${mpurate} " \
@@ -314,10 +318,13 @@
 		"if run loadbootenv; then " \
 			"echo Loaded environment from ${bootenv};" \
 			"run importbootenv;" \
-		"fi;" \
-		"if test -n $uenvcmd; then " \
-			"echo Running uenvcmd ...;" \
-			"run uenvcmd;" \
+			"if test -n $uenvcmd; then " \
+				"echo Running uenvcmd ...;" \
+				"run uenvcmd;" \
+			"fi;" \
+		"elif run loadbootscript; then " \
+			"echo Loaded script from ${bootscr};" \
+			"run bootscript; "\
 		"fi;" \
 		"if run loaduimage; then " \
 			"run mmcboot;" \
