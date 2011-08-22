@@ -96,7 +96,32 @@
 #define CONFIG_SPL
 #define COPY_BL2_FNPTR_ADDR	0x02020030
 
-#define CONFIG_BOOTCOMMAND	"fatload mmc 0 40007000 uImage; bootm 40007000"
+#define CONFIG_EXTRA_ENV_SETTINGS \
+        "loadaddr=0x42000000\0" \
+        "console=ttySAC2,115200n8\0" \
+        "mmcdev=0:2\0" \
+        "mmcroot=/dev/mmcblk0p2 rw\0" \
+        "rootwait\0" \
+        "mmcargs=setenv bootargs console=${console} " \
+	"root=${mmcroot}\0" \
+        "loadbootscript=fatload mmc ${mmcdev} ${loadaddr} boot.scr\0" \
+        "bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
+	"source ${loadaddr}\0" \
+        "loaduimage=fatload mmc ${mmcdev} ${loadaddr} uImage\0" \
+        "mmcboot=echo Booting from mmc${mmcdev} ...; " \
+	"run mmcargs; " \
+	"bootm ${loadaddr}\0" \
+
+#define CONFIG_BOOTCOMMAND \
+        "if mmc rescan ${mmcdev}; then " \
+	"if run loadbootscript; then " \
+	"run bootscript; " \
+                "else " \
+	"if run loaduimage; then " \
+	"run mmcboot; " \
+	"fi; " \
+	"fi; " \
+        "fi"
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP		/* undef to save memory */
