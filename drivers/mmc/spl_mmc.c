@@ -71,6 +71,7 @@ static void mmc_load_image_fat(struct mmc *mmc)
 {
 	s32 err;
 	struct image_header *header;
+	char *payloadname;
 
 	header = (struct image_header *)(CONFIG_SYS_TEXT_BASE -
 						sizeof(struct image_header));
@@ -82,20 +83,27 @@ static void mmc_load_image_fat(struct mmc *mmc)
 		hang();
 	}
 
-	err = file_fat_read(CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME,
+	payloadname = CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME;
+	err = file_fat_read(payloadname,
 				(u8 *)header, sizeof(struct image_header));
-	if (err <= 0)
-		goto end;
+	if (err <= 0) {
+		payloadname = "u-boot.bin";
+		err = file_fat_read(payloadname,
+				(u8 *)header, sizeof(struct image_header));
+		if (err <= 0) {
+			goto end;
+		}
+	}
 
 	spl_parse_image_header(header);
 
-	err = file_fat_read(CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME,
+	err = file_fat_read(payloadname,
 				(u8 *)spl_image.load_addr, 0);
 
 end:
 	if (err <= 0) {
 		printf("spl: error reading image %s, err - %d\n",
-			CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME, err);
+			payloadname, err);
 		hang();
 	}
 }
