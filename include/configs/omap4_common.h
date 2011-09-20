@@ -163,6 +163,9 @@
 	"mmcboot=echo Booting from mmc${mmcdev} ...; " \
 		"run mmcargs; " \
 		"bootm ${loadaddr}\0" \
+	"kernel_addr_r=0x88000000\0" \
+	"ramdisk_addr_r=0x81600000\0" \
+	"pxefile_addr_r=0x86000000\0"
 
 #define CONFIG_BOOTCOMMAND \
 	"mmc dev ${mmcdev}; if mmc rescan; then " \
