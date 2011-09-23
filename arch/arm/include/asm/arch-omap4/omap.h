@@ -167,7 +167,7 @@ struct control_lpddr2io_regs {
  * Non-secure RAM starts at 0x40300000 for GP devices. But we keep SRAM_BASE
  * at 0x40304000(EMU base) so that our code works for both EMU and GP
  */
-#define NON_SECURE_SRAM_START	0x40304000
+#define NON_SECURE_SRAM_START	0x40303000
 #define NON_SECURE_SRAM_END	0x4030E000	/* Not inclusive */
 /* base address for indirect vectors (internal boot mode) */
 #define SRAM_ROM_VECT_BASE	0x4030D000
