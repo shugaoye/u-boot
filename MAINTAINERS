@@ -929,7 +929,7 @@ Hugo Villeneuve <hugo.villeneuve@lyrtech.com>
 
 Matt Waddel <matt.waddel@linaro.org>
 
-	ca9x4_ct_vxp	ARM ARMV7 (Quad Core)
+	vexpress_common	ARM ARMV7 (Quad Core)
 
 Prafulla Wadaskar <prafulla@marvell.com>
 
