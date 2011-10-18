@@ -927,7 +927,8 @@ Hugo Villeneuve <hugo.villeneuve@lyrtech.com>
 
 	SFFSDR		ARM926EJS
 
-Matt Waddel <matt.waddel@linaro.org>
+Ryan Harkin <ryan.harkin@linaro.org>
+Jon Medhurst (Tixy) <jon.medhurst@linaro.org>
 
 	vexpress_ca9x4	ARM ARMV7 (Quad Core)
 	vexpress_ca5x2	ARM ARMV7 (Dual Core)
