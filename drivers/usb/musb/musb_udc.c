@@ -378,6 +378,11 @@ static void musb_peri_ep0_idle(void)
 	u16 csr0;
 
 	/*
+	 * NB: This fails/hangs sometimes if debug_level is set early before
+	 * udc_device->address is set.  Maybe fix by setting hw faddr to zero
+	 * at reset/init time????
+	 */
+	/*
 	 * Verify addresses
 	 * A lot of confusion can be caused if the address
 	 * in software, udc layer, does not agree with the

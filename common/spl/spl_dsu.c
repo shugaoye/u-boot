@@ -1,6 +1,8 @@
 /*
- * (C) Copyright 2012
+ * (C) Copyright 2010
  * Texas Instruments, <www.ti.com>
+ *
+ * Aneesh V <aneesh@ti.com>
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,17 +22,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-#ifndef	_ASM_ARCH_SPL_H_
-#define	_ASM_SPL_H_
+#include <common.h>
+#include <spl.h>
 
-#define BOOT_DEVICE_NONE	0
-#define BOOT_DEVICE_XIP		1
-#define BOOT_DEVICE_XIPWAIT	2
-#define BOOT_DEVICE_NAND	3
-#define BOOT_DEVICE_ONE_NAND	4
-#define BOOT_DEVICE_MMC1	5
-#define BOOT_DEVICE_MMC2	6
-#define BOOT_DEVICE_MMC2_2	0xFF
-#define BOOT_DEVICE_USB		69	/* usb periperal */
+DECLARE_GLOBAL_DATA_PTR;
 
+#ifdef CONFIG_SPL_DSU_SUPPORT
+void spl_dsu_load_image(void)
+{
+	u32 loadaddr;
+	u32 size;
+	int err;
+	struct image_header *header;
+
+	err = dsudownload(&loadaddr, &size);
+
+	if (err) {
+		serial_printf("usb download failed");
+		hang();
+	}
+	header = (struct image_header *)loadaddr;
+	spl_parse_image_header(header);
+	memcpy((void *)spl_image.load_addr, (void *)loadaddr, spl_image.size);
+}
 #endif

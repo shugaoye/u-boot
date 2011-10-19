@@ -111,6 +111,10 @@ int musb_platform_init(void)
 			goto end;
 		}
 #endif
+#ifdef CONFIG_OMAP4430
+		/* Power down the phy during init */
+		writel(0x1, (void *)0x4a002300);
+#endif
 
 #ifdef CONFIG_TWL6030_POWER
 		twl6030_usb_device_settings();
@@ -137,6 +141,8 @@ int musb_platform_init(void)
 #ifdef CONFIG_OMAP4430
 		u32 *usbotghs_control = (u32 *)(CTRL_BASE + 0x33C);
 		*usbotghs_control = 0x15;
+		/* Power up the phy now that initialization is complete */
+		writel(0, (void *)0x4a002300);
 #endif
 		platform_needs_initialization = 0;
 	}

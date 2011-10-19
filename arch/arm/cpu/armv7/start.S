@@ -124,6 +124,29 @@ IRQ_STACK_START_IN:
  */
 
 reset:
+#if defined CONFIG_SPL_BUILD && defined CONFIG_SPL_USB
+/*
+ * When loaded over USB the code lands at the base
+ * of SRAM so we need to copy to our actual link
+ * address.  The destination overlaps with the source
+ * so copy backwards.
+ */
+	ldr	sp, =(CONFIG_SYS_INIT_SP_ADDR)
+	bic	sp, sp, #7 /* 8-byte alignment for ABI compliance */
+	ldr	r8, =_start		/* linked here */
+	adr	r7, _start		/* loaded here */
+	subs	r6, r8, r7		/* offset */
+	beq	done			/* nothing todo */
+	ldr	r9, =__image_copy_end	/* dest = end of linked code */
+	sub	r7, r9, r6		/* source = dest - offset */
+2:	ldr	r6, [r7], #-4
+	str	r6, [r9], #-4
+	cmp	r9, r8
+	bne	2b
+	ldr	lr, =done
+	mov	pc, lr
+done:
+#endif
 	bl	save_boot_params
 	/*
 	 * set the cpu to SVC32 mode

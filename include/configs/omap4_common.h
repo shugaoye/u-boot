@@ -114,7 +114,9 @@
 
 /* USB device configuration */
 #define CONFIG_USB_DEVICE		1
+#ifndef CONFIG_SPL_USB
 #define CONFIG_USB_TTY			1
+#endif
 #define CONFIG_SYS_CONSOLE_IS_IN_ENV	1
 
 /* Flash */
@@ -271,8 +273,19 @@
 #define CONFIG_SPL_LIBCOMMON_SUPPORT
 #define CONFIG_SPL_LIBDISK_SUPPORT
 #define CONFIG_SPL_I2C_SUPPORT
+/*
+ * TODO: Fix this:
+ * Because of spl image size issues, usb peripheral boot
+ * and mmc/fat boot can not be enabled at the same time
+ */
+#ifdef CONFIG_SPL_USB
+#define CONFIG_SPL_DSU_SUPPORT
+#define CONFIG_SPL_USB_SUPPORT
+#define CONFIG_SPL_MUSB_SUPPORT
+#else
 #define CONFIG_SPL_MMC_SUPPORT
 #define CONFIG_SPL_FAT_SUPPORT
+#endif
 #define CONFIG_SPL_LIBGENERIC_SUPPORT
 #define CONFIG_SPL_SERIAL_SUPPORT
 #define CONFIG_SPL_GPIO_SUPPORT

@@ -74,6 +74,10 @@ void spl_spi_load_image(void);
 /* Ethernet SPL functions */
 void spl_net_load_image(const char *device);
 
+/* USB SPL functions */
+void spl_dsu_load_image(void);
+int dsudownload(u32 *, u32 *);
+
 #ifdef CONFIG_SPL_BOARD_INIT
 void spl_board_init(void);
 #endif

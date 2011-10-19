@@ -50,4 +50,8 @@ int udc_init(void);
 
 #endif /* CONFIG_USB_TTY */
 
+#ifdef CONFIG_SPL_DSU_SUPPORT
+#define EP0_MAX_PACKET_SIZE	64 /* MUSB_EP0_FIFOSIZE */
+#endif
+
 #endif /* __MUSB_UDC_H__ */

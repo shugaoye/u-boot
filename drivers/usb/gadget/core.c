@@ -117,6 +117,7 @@ char *usbd_device_status[] = {
 
 /* Descriptor support functions ************************************************************** */
 
+char *usb_string_NA = "\010\003N\000/\000A\000";
 
 /**
  * usbd_get_string - find and return a string descriptor
@@ -127,6 +128,8 @@ char *usbd_device_status[] = {
 struct usb_string_descriptor *usbd_get_string (__u8 index)
 {
 	if (index >= maxstrings) {
+		if (index == 0xee)
+			return (struct usb_string_descriptor *)usb_string_NA;
 		return NULL;
 	}
 	return usb_strings[index];
@@ -534,6 +537,11 @@ void urb_append (urb_link * hd, struct urb *urb)
 
 /* URB create/destroy functions ***************************************************** */
 
+#ifdef CONFIG_SPL_BUILD
+static struct urb urbpool[10];
+static struct urb *urbp = urbpool;
+#endif
+
 /**
  * usbd_alloc_urb - allocate an URB appropriate for specified endpoint
  * @device: device instance
@@ -550,11 +558,15 @@ struct urb *usbd_alloc_urb (struct usb_device_instance *device,
 {
 	struct urb *urb;
 
+#ifndef CONFIG_SPL_BUILD
 	if (!(urb = (struct urb *) malloc (sizeof (struct urb)))) {
 		usberr (" F A T A L:  malloc(%zu) FAILED!!!!",
 			sizeof (struct urb));
 		return NULL;
 	}
+#else
+	urb = urbp++;
+#endif
 
 	/* Fill in known fields */
 	memset (urb, 0, sizeof (struct urb));
