@@ -75,4 +75,5 @@ void dieid_num_r(void);
 void do_omap3_emu_romcode_call(u32 service_id, u32 parameters);
 void omap3_gp_romcode_call(u32 service_id, u32 parameter);
 u32 warm_reset(void);
+void omap3_die_id_to_ethernet_mac(u8 *, int);
 #endif
