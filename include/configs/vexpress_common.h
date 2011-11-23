@@ -176,6 +176,8 @@
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_SAVEENV
 #define CONFIG_CMD_RUN
+#define CONFIG_CMD_BOOTD
+#define CONFIG_CMD_ECHO
 
 #define CONFIG_CMD_FAT
 #define CONFIG_DOS_PARTITION		1
@@ -217,7 +219,14 @@
 #define CONFIG_SYS_INIT_SP_ADDR		CONFIG_SYS_GBL_DATA_OFFSET
 
 /* Basic environment settings */
-#define CONFIG_BOOTCOMMAND		"run bootflash;"
+#define CONFIG_BOOTCOMMAND \
+	"if mmc rescan ${mmcdev}; then " \
+		"if run loadbootscript; then " \
+			"run bootscript; " \
+		"fi; " \
+	"fi; " \
+	"run bootflash;"
+
 #ifdef CONFIG_VEXPRESS_ORIGINAL_MEMORY_MAP
 #define CONFIG_PLATFORM_ENV_SETTINGS \
 		"loadaddr=0x80008000\0" \
@@ -249,7 +258,12 @@
 			"devtmpfs.mount=0  vmalloc=256M\0" \
 		"bootflash=run flashargs; " \
 			"cp ${ramdisk_addr} ${ramdisk_addr_r} ${maxramdisk}; " \
-			"bootm ${kernel_addr} ${ramdisk_addr_r}\0"
+			"bootm ${kernel_addr} ${ramdisk_addr_r}\0" \
+		"mmcdev=0\0" \
+		"bootscr=boot.scr\0" \
+		"loadbootscript=fatload mmc ${mmcdev} ${loadaddr} ${bootscr}\0" \
+		"bootscript=echo Running bootscript from mmc ...; " \
+			"source ${loadaddr}\0"
 
 /* FLASH and environment organization */
 #define PHYS_FLASH_SIZE			0x04000000	/* 64MB */
@@ -298,6 +312,8 @@
 #define CONFIG_SYS_PROMPT		"VExpress# "
 #define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
 					sizeof(CONFIG_SYS_PROMPT) + 16)
+#define CONFIG_SYS_HUSH_PARSER
+#define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE /* Boot args buffer */
 #define CONFIG_CMD_SOURCE
 #define CONFIG_SYS_LONGHELP
