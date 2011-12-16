@@ -61,8 +61,27 @@ int board_init(void)
 	return 0;
 }
 
+/*
+ * Panda has a usb nic with no ethernet rom so generate a macaddr
+ * from the SOC die-id and set the usbethaddr env var to that
+ * value.
+ */
 int board_eth_init(bd_t *bis)
 {
+	u8 macaddr[6];
+	char usbethaddr[20];
+
+	/*
+	 * NB: The 1 here has been found to generate an address
+	 * consistent with the kernel.
+	 */
+	omap4_die_id_to_ethernet_mac(macaddr, 1);
+	sprintf (usbethaddr, "%02X:%02X:%02X:%02X:%02X:%02X",
+		 macaddr[0], macaddr[1],
+		 macaddr[2], macaddr[3],
+		 macaddr[4], macaddr[5]) ;
+	setenv ("usbethaddr", usbethaddr);
+
 	return 0;
 }
 

@@ -29,6 +29,7 @@
  */
 #include <common.h>
 #include <spl.h>
+#include <asm/io.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/sizes.h>
 #include <asm/emif.h>
@@ -252,6 +253,46 @@ int print_cpuinfo(void)
 
 	return 0;
 }
+
+/*
+ * this uses the unique per-cpu info from the cpu fuses set at factory to
+ * generate a 6-byte MAC address.  Two bits in the generated code are used
+ * to elaborate the generated address into four, so it can be used on multiple
+ * network interfaces.
+ */
+void omap4_die_id_to_ethernet_mac(u8 *mac, int subtype)
+{
+	struct ctrl_id *id_base = (struct ctrl_id *)(CTRL_BASE + 0x200);
+	u32 idcode;
+	u32 id[4];
+
+	idcode = readl(&id_base->idcode);
+	id[0] = readl(&id_base->die_id_0);
+	id[1] = readl(&id_base->die_id_1);
+	id[2] = readl(&id_base->die_id_2);
+	id[3] = readl(&id_base->die_id_3);
+
+	mac[0] = id[2];
+	mac[1] = id[2] >> 8;
+	mac[2] = id[1];
+	mac[3] = id[1] >> 8;
+	mac[4] = id[1] >> 16;
+	mac[5] = id[1] >> 24;
+	/* XOR other chip-specific data with ID */
+	idcode ^= id[3];
+
+	mac[0] ^= idcode;
+	mac[1] ^= idcode >> 8;
+	mac[2] ^= idcode >> 16;
+	mac[3] ^= idcode >> 24;
+
+	/* allow four MACs from this same basic data */
+	mac[1] = (mac[1] & ~0xc0) | ((subtype & 3) << 6);
+
+	/* mark it as not multicast and outside official 80211 MAC namespace */
+	mac[0] = (mac[0] & ~1) | 2;
+}
+
 #ifndef CONFIG_SYS_DCACHE_OFF
 void enable_caches(void)
 {

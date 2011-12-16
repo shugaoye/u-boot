@@ -94,6 +94,17 @@ struct gptimer {
 	u32 tcicr;		/* 0x40 rw */
 	u32 tcar2;		/* 0x44 r */
 };
+
+struct ctrl_id {
+	u32 die_id_0;		/* 0x00 */
+	u32 idcode;		/* 0x04 */
+	u32 die_id_1;		/* 0x08 */
+	u32 die_id_2;		/* 0x0c */
+	u32 die_id_3;		/* 0x10 */
+	u32 prod_id_0;		/* 0x14 */
+	u32 prod_id_1;		/* 0x18 */
+};
+
 #endif /* __ASSEMBLY__ */
 #endif /* __KERNEL_STRICT_NAMES */
 
