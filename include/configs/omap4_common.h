@@ -169,6 +169,15 @@
 	"ramdisk_addr_r=0x81600000\0" \
 	"pxefile_addr_r=0x86000000\0"
 
+#ifdef CONFIG_SPL_USB
+#define CONFIG_BOOTCOMMAND \
+	"if usb start; then " \
+		"set autoload no; "\
+		"bootp; "\
+		"pxe get;" \
+		"pxe boot;" \
+	"fi"
+#else
 #define CONFIG_BOOTCOMMAND \
 	"mmc dev ${mmcdev}; if mmc rescan; then " \
 		"if run loadbootscript; then " \
@@ -185,6 +194,7 @@
 		"pxe get;" \
 		"pxe boot;" \
 	"fi"
+#endif
 
 #define CONFIG_AUTO_COMPLETE		1
 
