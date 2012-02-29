@@ -26,6 +26,7 @@
 
 #define CONFIG_OF_LIBFDT
 #define CONFIG_FIT
+#define CONFIG_SUPPORT_RAW_INITRD
 #define CONFIG_SYS_BOOTMAPSZ		(16 << 20)
 
 /*
@@ -38,7 +39,7 @@
 #define CONFIG_PL01x_PORTS		{ (void *)(0xFFF36000) }
 #define CONFIG_CONS_INDEX		0
 
-#define CONFIG_BAUDRATE			38400
+#define CONFIG_BAUDRATE			115200
 
 #define CONFIG_BOOTCOUNT_LIMIT
 #define CONFIG_SYS_BOOTCOUNT_SINGLEWORD
@@ -54,6 +55,7 @@
 					CONFIG_SYS_SCSI_MAX_LUN)
 
 #define CONFIG_DOS_PARTITION
+#define CONFIG_EFI_PARTITION
 
 #define CONFIG_CALXEDA_XGMAC
 
@@ -70,12 +72,15 @@
 #define CONFIG_SYS_MMC_MAX_DEVICE 2
 
 #define CONFIG_CMD_BDI
+#define CONFIG_CMD_BOOTZ
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_ELF
 #define CONFIG_CMD_MEMORY
 #define CONFIG_CMD_LOADS
 #define CONFIG_CMD_SCSI
 #define CONFIG_CMD_EXT2
+#define CONFIG_CMD_EXT4
+#define CONFIG_CMD_FAT
 #define CONFIG_CMD_PXE
 #define CONFIG_MENU
 
@@ -86,10 +91,12 @@
 #define CONFIG_CMDLINE_EDITING
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_LONGHELP		/* undef to save memory		 */
-#define CONFIG_SYS_CBSIZE		256	/* Console I/O Buffer Size */
+#define CONFIG_SYS_CBSIZE		1024	/* Console I/O Buffer Size */
 #define CONFIG_SYS_MAXARGS		16	/* max number of cmd args */
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
 #define CONFIG_SYS_PROMPT		"Highbank #"
+#define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
+#define CONFIG_SYS_HUSH_PARSER
 /* Print Buffer Size */
 #define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
 					 sizeof(CONFIG_SYS_PROMPT)+16)
