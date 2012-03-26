@@ -597,6 +597,7 @@ static int label_localboot(struct pxe_label *label)
 static void label_boot(struct pxe_label *label)
 {
 	char *bootm_argv[] = { "bootm", NULL, NULL, NULL, NULL };
+	char initrd_str[22];
 	int bootm_argc = 3;
 
 	label_print(label);
@@ -621,7 +622,10 @@ static void label_boot(struct pxe_label *label)
 			return;
 		}
 
-		bootm_argv[2] = getenv("ramdisk_addr_r");
+		bootm_argv[2] = initrd_str;
+		strcpy(bootm_argv[2], getenv("ramdisk_addr_r"));
+		strcat(bootm_argv[2], ":");
+		strcat(bootm_argv[2], getenv("filesize"));
 	} else {
 		bootm_argv[2] = "-";
 	}
@@ -665,7 +669,11 @@ static void label_boot(struct pxe_label *label)
 	if (bootm_argv[3])
 		bootm_argc = 4;
 
+#ifdef CONFIG_CMD_BOOTZ
+	do_bootz(NULL, 0, bootm_argc, bootm_argv);
+#else
 	do_bootm(NULL, 0, bootm_argc, bootm_argv);
+#endif
 }
 
 /*
