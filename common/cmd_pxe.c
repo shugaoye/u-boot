@@ -456,6 +456,7 @@ struct pxe_label {
 	char *fdt;
 	int attempted;
 	int localboot;
+	int localboot_val;
 	struct list_head list;
 };
 
@@ -594,7 +595,7 @@ static int label_localboot(struct pxe_label *label)
  * If the label specifies an 'append' line, its contents will overwrite that
  * of the 'bootargs' environment variable.
  */
-static void label_boot(struct pxe_label *label)
+static int label_boot(struct pxe_label *label)
 {
 	char *bootm_argv[] = { "bootm", NULL, NULL, NULL, NULL };
 	char initrd_str[22];
@@ -605,21 +606,22 @@ static void label_boot(struct pxe_label *label)
 	label->attempted = 1;
 
 	if (label->localboot) {
-		label_localboot(label);
-		return;
+		if (label->localboot_val >= 0)
+			label_localboot(label);
+		return 0;
 	}
 
 	if (label->kernel == NULL) {
 		printf("No kernel given, skipping %s\n",
 				label->name);
-		return;
+		return 1;
 	}
 
 	if (label->initrd) {
 		if (get_relfile_envaddr(label->initrd, "ramdisk_addr_r") < 0) {
 			printf("Skipping %s for failure retrieving initrd\n",
 					label->name);
-			return;
+			return 1;
 		}
 
 		bootm_argv[2] = initrd_str;
@@ -633,7 +635,7 @@ static void label_boot(struct pxe_label *label)
 	if (get_relfile_envaddr(label->kernel, "kernel_addr_r") < 0) {
 		printf("Skipping %s for failure retrieving kernel\n",
 				label->name);
-		return;
+		return 1;
 	}
 
 	if (label->append)
@@ -674,6 +676,7 @@ static void label_boot(struct pxe_label *label)
 #else
 	do_bootm(NULL, 0, bootm_argc, bootm_argv);
 #endif
+	return 1;
 }
 
 /*
@@ -923,12 +926,7 @@ static int parse_integer(char **c, int *dst)
 		return -EINVAL;
 	}
 
-	if (strict_strtoul(t.val, 10, &temp) < 0) {
-		printf("Expected unsigned integer: %s\n", t.val);
-		return -EINVAL;
-	}
-
-	*dst = (int)temp;
+	*dst = simple_strtol(t.val, &temp, 10);
 
 	free(t.val);
 
@@ -1064,6 +1062,7 @@ static int parse_label(char **c, struct pxe_menu *cfg)
 	char *s = *c;
 	struct pxe_label *label;
 	int err;
+	int localboot;
 
 	label = label_create();
 	if (!label)
@@ -1119,7 +1118,8 @@ static int parse_label(char **c, struct pxe_menu *cfg)
 			break;
 
 		case T_LOCALBOOT:
-			err = parse_integer(c, &label->localboot);
+			label->localboot = 1;
+			err = parse_integer(c, &label->localboot_val);
 			break;
 
 		case T_EOL:
@@ -1378,8 +1378,11 @@ static void handle_pxe_menu(struct pxe_menu *cfg)
 	 * we give up.
 	 */
 
-	if (err == 1)
-		label_boot(choice);
+	if (err == 1) {
+		err = label_boot(choice);
+		if (!err)
+			return;
+	}
 	else if (err != -ENOENT)
 		return;
 
