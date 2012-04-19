@@ -269,6 +269,10 @@
 		"omapdss.def_disp=${defaultdisplay} " \
 		"root=${nandroot} " \
 		"rootfstype=${nandrootfstype}\0" \
+	"preenv=preEnv.txt\0" \
+	"loadpreenv=fatload mmc ${mmcdev} ${loadaddr} ${preenv}\0" \
+	"importpreenv=echo Importing preboot environment from mmc ...; " \
+		"env import -t $loadaddr $filesize\0" \
 	"bootenv=uEnv.txt\0" \
 	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv=echo Importing environment from mmc ...; " \
@@ -307,6 +311,19 @@
 	"userbutton_xm=gpio input 4;\0" \
 	"userbutton_nonxm=gpio input 7;\0"
 /* "run userbutton" will return 1 (false) if is pressed and 0 (false) if not */
+#define CONFIG_PREBOOT \
+	"echo checking for ${preenv};" \
+	"if mmc rescan ${mmcdev}; then " \
+		"if run loadpreenv; then " \
+			"echo Loaded environment from ${preenv};" \
+			"run importpreenv;" \
+			"if test -n $preenvcmd; then " \
+				"echo Running preenvcmd ...;" \
+				"run preenvcmd;" \
+			"fi;" \
+		"fi;" \
+	"fi"
+
 #define CONFIG_BOOTCOMMAND \
 	"mmc dev ${mmcdev}; if mmc rescan; then " \
 		"if run userbutton; then " \
