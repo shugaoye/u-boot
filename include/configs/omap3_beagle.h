@@ -283,6 +283,9 @@
 	"ramboot=echo Booting from ramdisk ...; " \
 		"run ramargs; " \
 		"bootm ${loadaddr}\0" \
+	"kernel_addr_r=0x88000000\0" \
+	"ramdisk_addr_r=0x81600000\0" \
+	"pxefile_addr_r=0x86000000\0" \
 	"userbutton=if gpio input 173; then run userbutton_xm; " \
 		"else run userbutton_nonxm; fi;\0" \
 	"userbutton_xm=gpio input 4;\0" \
