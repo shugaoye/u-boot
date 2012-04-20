@@ -88,5 +88,6 @@ void dram_init_banksize(void)
 void reset_cpu(ulong addr)
 {
 	writel(HB_PWR_HARD_RESET, HB_SREG_A9_PWR_REQ);
+	writeb(0x3, 0xfff10008);
 	asm("	wfi");
 }
