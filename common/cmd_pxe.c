@@ -1280,6 +1280,7 @@ static struct menu *pxe_menu_to_menu(struct pxe_menu *cfg)
 	struct menu *m;
 	int err;
 	int i = 1;
+	char *default_num = NULL;
 
 	/*
 	 * Create a menu and add items for all the labels.
@@ -1297,14 +1298,18 @@ static struct menu *pxe_menu_to_menu(struct pxe_menu *cfg)
 			menu_destroy(m);
 			return NULL;
 		}
+		if (cfg->default_label &&
+			(strcmp(label->name, cfg->default_label) == 0))
+			default_num = label->num;
+
 	}
 
 	/*
 	 * After we've created items for each label in the menu, set the
 	 * menu's default label if one was specified.
 	 */
-	if (cfg->default_label) {
-		err = menu_default_set(m, cfg->default_label);
+	if (default_num) {
+		err = menu_default_set(m, default_num);
 		if (err != 1) {
 			if (err != -ENOENT) {
 				menu_destroy(m);
