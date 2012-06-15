@@ -1,4 +1,4 @@
-bootcmd_setup=mw.l fff3c100 5f20121; mw.l fff3c104 0
+bootcmd_setup=
 bootcmd_pxe=setenv bootfile "" ;dhcp; pxe get; pxe boot
 bootcmd_disk_scr=ext2load ${boot_ifc} ${bootdevice} ${scr_addr_r} boot.scr && source ${scr_addr_r}
 bootcmd_disk_sysboot1=setenv bootfile /boot/extlinux/extlinux.conf; sysboot ${boot_ifc} ${bootdevice} ext2
