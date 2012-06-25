@@ -918,7 +918,8 @@ int ahci_init(u32 base)
 				| ATA_FLAG_PIO_DMA
 				| ATA_FLAG_NO_ATAPI;
 	probe_ent->pio_mask = 0x1f;
-	probe_ent->udma_mask = 0x7f;	/*Fixme,assume to support UDMA6 */
+	probe_ent->udma_mask = 0x3f;	/* Fixme,assume to support up to UDMA5
+					 * as some drives don't support UDMA6 */
 
 	probe_ent->mmio_base = base;
 
