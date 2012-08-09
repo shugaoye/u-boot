@@ -63,6 +63,39 @@ static char *dhcpmsg2str(int type)
 	}
 }
 #endif
+
+#if defined(CONFIG_BOOTP_VENDOREX)
+extern u8 *dhcp_vendorex_prep (u8 *e); /*rtn new e after add own opts. */
+extern u8 *dhcp_vendorex_proc (u8 *e); /*rtn next e if mine,else NULL  */
+u8 *__dhcp_vendorex_prep(u8 *e)
+{
+	char *ptr;
+
+	/* DHCP vendor-class-identifier = 60 */
+	if ((ptr = getenv("dhcp_vendor-class-identifier"))) {
+		*e++ = 60;
+		*e++ = strlen(ptr);
+		while (*ptr)
+			*e++ = *ptr++;
+	}
+	/* DHCP_CLIENT_IDENTIFIER = 61 */
+	if ((ptr = getenv("dhcp_client_id"))) {
+		*e++ = 61;
+		*e++ = strlen(ptr);
+		while (*ptr)
+			*e++ = *ptr++;
+	}
+
+	return e;
+}
+
+u8 *__dhcp_vendorex_proc(u8 *popt)
+{
+	return NULL;
+}
+u8 *dhcp_vendorex_prep(u8 *e) __attribute__((weak, alias("__dhcp_vendorex_prep")));
+u8 *dhcp_vendorex_proc(u8 *e) __attribute__((weak, alias("__dhcp_vendorex_proc")));
+#endif
 #endif
 
 static int BootpCheckPkt(uchar *pkt, unsigned dest, unsigned src, unsigned len)
