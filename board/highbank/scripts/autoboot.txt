@@ -17,6 +17,7 @@ localcmd=run bootcmd_sata
 bootdevice=0
 bootargs=console=ttyAMA0 root=LABEL=rootfs nosplash
 bootdelay=2
+bootretry=90
 netretry=once
 fdt_addr=0x1000
 fdt_high=0xffffffff
