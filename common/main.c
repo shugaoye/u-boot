@@ -68,10 +68,8 @@ static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen);
 static const char erase_seq[] = "\b \b";		/* erase sequence	*/
 static const char   tab_seq[] = "        ";		/* used to expand TABs	*/
 
-#ifdef CONFIG_BOOT_RETRY_TIME
 static uint64_t endtime = 0;  /* must be set, default is instant timeout */
 static int      retry_time = -1; /* -1 so can call readline before main_loop */
-#endif
 
 #define	endtick(seconds) (get_ticks() + (uint64_t)(seconds) * get_tbclk())
 
@@ -84,6 +82,20 @@ int do_mdm_init = 0;
 extern void mdm_init(void); /* defined in board.c */
 #endif
 
+int wait_for_ch_timeout(int rel_timeout, uint64_t abs_timeout)
+{
+	uint64_t etime = abs_timeout;
+
+	if (rel_timeout)
+		etime = endtick(rel_timeout);
+
+	while (!tstc()) {	/* while no incoming data */
+		if ((retry_time >= 0) && etime && (get_ticks() > etime))
+			return (-2);	/* timed out */
+		WATCHDOG_RESET();
+	}
+	return 0;
+}
 /***************************************************************************
  * Watch for 'delay' seconds for autoboot stop or autoboot delay string.
  * returns: 0 -  no key string, allow autoboot 1 - got key string, abort
@@ -685,29 +697,16 @@ static int cread_line(const char *const prompt, char *buf, unsigned int *len,
 	int esc_len = 0;
 	char esc_save[8];
 	int init_len = strlen(buf);
-	int first = 1;
+	int rc;
 
 	if (init_len)
 		cread_add_str(buf, init_len, 1, &num, &eol_num, buf, *len);
 
 	while (1) {
-#ifdef CONFIG_BOOT_RETRY_TIME
-		while (!tstc()) {	/* while no incoming data */
-			if (retry_time >= 0 && get_ticks() > endtime)
-				return (-2);	/* timed out */
-			WATCHDOG_RESET();
-		}
-#endif
-		if (first && timeout) {
-			uint64_t etime = endtick(timeout);
-
-			while (!tstc()) {	/* while no incoming data */
-				if (get_ticks() >= etime)
-					return -2;	/* timed out */
-				WATCHDOG_RESET();
-			}
-			first = 0;
-		}
+		rc = wait_for_ch_timeout(timeout, endtime);
+		if (rc < 0)
+			return rc;
+		timeout = 0;
 
 		ichar = getcmd_getch();
 
@@ -969,13 +968,11 @@ int readline_into_buffer(const char *const prompt, char *buffer, int timeout)
 	col = plen;
 
 	for (;;) {
-#ifdef CONFIG_BOOT_RETRY_TIME
-		while (!tstc()) {	/* while no incoming data */
-			if (retry_time >= 0 && get_ticks() > endtime)
-				return (-2);	/* timed out */
-			WATCHDOG_RESET();
-		}
-#endif
+		rc = wait_for_ch_timeout(timeout, endtime);
+		if (rc < 0)
+			return rc;
+		timeout = 0;
+
 		WATCHDOG_RESET();		/* Trigger watchdog, if needed */
 
 #ifdef CONFIG_SHOW_ACTIVITY
