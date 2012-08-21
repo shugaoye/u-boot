@@ -122,6 +122,9 @@
 /* Flash */
 #define CONFIG_SYS_NO_FLASH	1
 
+/* clocks */
+#define CONFIG_SYS_CLOCKS_ENABLE_ALL
+
 /* commands to include */
 #include <config_cmd_default.h>
 
@@ -330,6 +333,8 @@
 #define CONFIG_SPL_SERIAL_SUPPORT
 #define CONFIG_SPL_GPIO_SUPPORT
 #define CONFIG_SPL_LDSCRIPT "$(CPUDIR)/omap-common/u-boot-spl.lds"
+
+#define CONFIG_SYS_ENABLE_PADS_ALL
 
 #define CONFIG_SYS_THUMB_BUILD
 
