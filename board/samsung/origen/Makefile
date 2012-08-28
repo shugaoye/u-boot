@@ -41,7 +41,7 @@ OBJS	:= $(addprefix $(obj),$(COBJS) $(SOBJS))
 ALL	+=$(obj).depend $(LIB)
 
 ifdef CONFIG_SPL_BUILD
-ALL	+= $(OBJTREE)/tools/mk$(BOARD)spl
+ALL	+= $(OBJTREE)/tools/mk$(SOC)spl
 endif
 
 all:	$(ALL)
@@ -50,8 +50,8 @@ $(LIB):	$(OBJS)
 	$(call cmd_link_o_target, $(OBJS))
 
 ifdef CONFIG_SPL_BUILD
-$(OBJTREE)/tools/mk$(BOARD)spl:	tools/mkv310_image.c
-	$(HOSTCC) tools/mkv310_image.c -o $(OBJTREE)/tools/mk$(BOARD)spl
+$(OBJTREE)/tools/mk$(SOC)spl:	tools/mkv310_image.c
+	$(HOSTCC) tools/mkv310_image.c -o $(OBJTREE)/tools/mk$(SOC)spl
 endif
 
 #########################################################################

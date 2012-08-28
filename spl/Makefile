@@ -132,7 +132,7 @@ all:	$(ALL-y)
 
 ifdef CONFIG_SAMSUNG
 $(obj)$(BOARD)-spl.bin: $(obj)u-boot-spl.bin
-	$(OBJTREE)/tools/mk$(BOARD)spl \
+	$(OBJTREE)/tools/mk$(SOC)spl \
 		$(obj)u-boot-spl.bin $(obj)$(BOARD)-spl.bin
 endif
 
