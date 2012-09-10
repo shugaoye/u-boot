@@ -265,6 +265,11 @@ static int create_fdt(bootm_headers_t *images)
 	ft_board_setup(*of_flat_tree, gd->bd);
 #endif
 
+#ifdef CONFIG_OF_BOARD_SETUP
+	/* Call the board-specific fixup routine */
+	ft_board_setup(*of_flat_tree, gd->bd);
+#endif
+
 	return 0;
 }
 #endif
