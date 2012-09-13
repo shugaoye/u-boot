@@ -101,7 +101,7 @@ void ft_board_setup(void *fdt, bd_t *bd)
 	u32 reg = readl(HB_SREG_A9_PWRDOM_STAT);
 
 	if (!(reg & PWRDOM_STAT_SATA))
-		do_fixup_by_compat(fdt, "calxeda,hb-sata", "status", disabled, sizeof(disabled), 1);
+		do_fixup_by_compat(fdt, "calxeda,hb-ahci", "status", disabled, sizeof(disabled), 1);
 
 	if (!(reg & PWRDOM_STAT_EMMC))
 		do_fixup_by_compat(fdt, "calxeda,hb-sdhci", "status", disabled, sizeof(disabled), 1);
