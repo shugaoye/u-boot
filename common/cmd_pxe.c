@@ -666,7 +666,7 @@ static int label_boot(struct pxe_label *label)
 		len += strlen(label->append);
 
 	if (len) {
-		bootargs = malloc(len);
+		bootargs = malloc(len + 1);
 		if (!bootargs)
 			return 1;
 		bootargs[0] ='\0';
