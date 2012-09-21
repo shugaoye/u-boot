@@ -201,7 +201,7 @@
 
 #define CONFIG_SYS_HUSH_PARSER		1
 #define CONFIG_CMDLINE_EDITING
-
+#define CONFIG_OF_LIBFDT		1
 #define CONFIG_SETUP_MEMORY_TAGS	2
 #define CONFIG_INITRD_TAG		1
 #define CONFIG_CMDLINE_TAG		1	/* enable passing of ATAGs  */
