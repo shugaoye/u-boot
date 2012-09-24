@@ -176,10 +176,11 @@
 	"mmcboot=echo Booting from external MMC ...; "			\
 		"run commonargs mmcargs memargs; "			\
 		"bootm ${loadaddr}\0"					\
-	"fdt_high=0x2BC00000\0"						\
 	"stdout=serial,usbtty\0"					\
 	"stdin=serial,usbtty\0"						\
-	"stderr=serial,usbtty\0"
+	"stderr=serial,usbtty\0"					\
+	"initrd_high=0x06000000\0"					\
+	"fdt_high=0x05000000\0"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
