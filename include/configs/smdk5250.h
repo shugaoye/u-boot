@@ -90,6 +90,8 @@
 
 /* Command definition*/
 #include <config_cmd_default.h>
+#define CONFIG_API
+#define CONFIG_SYS_MMC_MAX_DEVICE 2
 
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_ELF

@@ -96,23 +96,19 @@
 #define CONFIG_GENERIC_MMC
 #define CONFIG_DOS_PARTITION
 
+#define CONFIG_SYS_NO_FLASH
+
 /*
  * Commands
  */
-#define CONFIG_CMD_MEMORY
-#define CONFIG_CMD_BOOTD
-#define CONFIG_CMD_BDI
-#define CONFIG_CMD_IMI
-#define CONFIG_CMD_MISC
-#define CONFIG_CMD_RUN
-#define CONFIG_CMD_ECHO
-#define CONFIG_CMD_CONSOLE
-#define CONFIG_CMD_LOADS
-#define CONFIG_CMD_LOADB
+#include <config_cmd_default.h>
+
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_EXT2
-#define CONFIG_CMD_SOURCE
+
+#define CONFIG_API
+#define CONFIG_SYS_MMC_MAX_DEVICE 2
 
 #ifndef CONFIG_BOOTDELAY
 #define CONFIG_BOOTDELAY	1
@@ -236,11 +232,6 @@
 #define MMC_BLOCK_SIZE			512
 #define CFG_EMMC_BASE                   0x80114000
 #define CFG_MMC_BASE                    0x80126000
-
-/*
- * FLASH and environment organization
- */
-#define CONFIG_SYS_NO_FLASH
 
 /*
  * base register values for U8500

@@ -25,6 +25,8 @@
 #define __CONFIG_H
 
 #include <config_cmd_default.h>
+#define CONFIG_API
+#define CONFIG_SYS_MMC_MAX_DEVICE 2
 
 /*
  * High Level Board Configuration Options

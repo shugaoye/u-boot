@@ -70,6 +70,9 @@
 
 #include <configs/omap4_common.h>
 #define CONFIG_CMD_NET
+#define CONFIG_API
+#define CONFIG_SYS_MMC_MAX_DEVICE 2
+
 
 /* GPIO */
 #define CONFIG_CMD_GPIO

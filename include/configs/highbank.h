@@ -66,6 +66,8 @@
  * Command line configuration.
  */
 #include <config_cmd_default.h>
+#define CONFIG_API
+#define CONFIG_SYS_MMC_MAX_DEVICE 2
 
 #define CONFIG_CMD_BDI
 #define CONFIG_CMD_DHCP

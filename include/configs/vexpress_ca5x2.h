@@ -31,4 +31,4 @@
 #include "vexpress_common.h"
 #define CONFIG_BOOTP_VCI_STRING     "U-boot.armv7.vexpress_ca5x2"
 
-#endif // __VEXPRESS_CA5X2_h
+#endif
