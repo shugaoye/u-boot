@@ -51,6 +51,7 @@ COBJS-$(CONFIG_SPL_DSU_SUPPORT) += dsuboot.o
 endif
 endif
 
+COBJS-y += usbd-otg-hs.o
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)
 OBJS	:= $(addprefix $(obj),$(COBJS))

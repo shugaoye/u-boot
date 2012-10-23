@@ -30,6 +30,7 @@
 /*
  * High Level Configuration Options
  */
+#define CONFIG_CMD_BOOTZ
 #define CONFIG_SAMSUNG			/* in a SAMSUNG core */
 #define CONFIG_S5P			/* S5P Family */
 #define CONFIG_EXYNOS4			/* which is in a Exynos4 series */
@@ -38,6 +39,15 @@
 #define CONFIG_BOARDNAME		"Origen"
 #define CONFIG_IDENT_STRING		" for Insignal Origen"
 #define CONFIG_MACH_TYPE		3455
+
+#define CONFIG_ARMV7            1       /* This is an ARM V7 CPU core */
+#define CONFIG_CPU_EXYNOS4X12   1       /* which is in a Exynos4X12 */
+#define CONFIG_S5PC210          1       /* which is in a S5PC210 */
+#define CONFIG_S5PC220          1       /* which is in a S5PC220 */
+#define CONFIG_SMDKC210         1
+#define CONFIG_SMDKC220         1
+#define CONFIG_EXYNOS4212       1
+#define CONFIG_EXYNOS4412_EVT1  1
 
 #include <asm/arch/cpu.h>		/* get chip and board defs */
 
@@ -144,7 +154,6 @@
 #include <config_cmd_default.h>
 #undef CONFIG_CMD_NET
 #undef CONFIG_CMD_NFS
-
 /*
  * Environment
  */
@@ -179,5 +188,13 @@
 #define CONFIG_OF_LIBFDT
 /* Boot Argument Buffer Size */
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
+/* USB Options */
+#define CONFIG_CMD_USB
+#ifdef	CONFIG_CMD_USB
+#define CONFIG_USB_OHCI
+#define CONFIG_S3C_USBD
+#define USBD_DOWN_ADDR			0xC0000000
+#endif
+#define CONFIG_OF_LIBFDT
 
-#endif /* __CONFIG_ORIGEN_QUAD_H */
+#endif
