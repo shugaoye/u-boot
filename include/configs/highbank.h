@@ -106,6 +106,8 @@
 					 sizeof(CONFIG_SYS_PROMPT)+16)
 
 #define CONFIG_SYS_LOAD_ADDR		0x800000
+#define CONFIG_SYS_64BIT_LBA
+
 
 /*-----------------------------------------------------------------------
  * Physical Memory Map
