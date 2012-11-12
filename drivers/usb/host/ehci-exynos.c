@@ -26,11 +26,14 @@
 #include <asm/arch/ehci.h>
 #include <asm/arch/system.h>
 #include <asm/arch/power.h>
+#include <asm/arch/gpio.h>
 #include "ehci.h"
 
 /* Setup the EHCI host controller. */
 static void setup_usb_phy(struct exynos_usb_phy *usb)
 {
+	u32 hsic_ctrl;
+
 	set_usbhost_mode(USB20_PHY_CFG_HOST_LINK_EN);
 
 	set_usbhost_phy_ctrl(POWER_USB_HOST_PHY_CTRL_EN);
@@ -57,6 +60,33 @@ static void setup_usb_phy(struct exynos_usb_phy *usb)
 			HOST_CTRL0_UTMISWRST);
 	udelay(20);
 
+	/* HSIC phy reset */
+	clrbits_le32(&usb->hsicphyctrl1,
+			HSIC_CTRL_FORCESUSPEND |
+			HSIC_CTRL_FORCESLEEP |
+			HSIC_CTRL_SIDDQ);
+
+	clrbits_le32(&usb->hsicphyctrl2,
+			HSIC_CTRL_FORCESUSPEND |
+			HSIC_CTRL_FORCESLEEP |
+			HSIC_CTRL_SIDDQ);
+
+	hsic_ctrl = (((HSIC_CTRL_REFCLKDIV_12 & HSIC_CTRL_REFCLKDIV_MASK)
+				<< HSIC_CTRL_REFCLKDIV_SHIFT)
+			| ((HSIC_CTRL_REFCLKSEL & HSIC_CTRL_REFCLKSEL_MASK)
+				<< HSIC_CTRL_REFCLKSEL_SHIFT)
+			| HSIC_CTRL_PHYSWRST);
+
+	setbits_le32(&usb->hsicphyctrl1, hsic_ctrl);
+	setbits_le32(&usb->hsicphyctrl2, hsic_ctrl);
+
+	udelay(10);
+
+	clrbits_le32(&usb->hsicphyctrl1, HSIC_CTRL_PHYSWRST);
+	clrbits_le32(&usb->hsicphyctrl2, HSIC_CTRL_PHYSWRST);
+
+	udelay(80);
+
 	/* EHCI Ctrl setting */
 	setbits_le32(&usb->ehcictrl,
 			EHCICTRL_ENAINCRXALIGN |
@@ -79,6 +109,7 @@ static void reset_usb_phy(struct exynos_usb_phy *usb)
 	set_usbhost_phy_ctrl(POWER_USB_HOST_PHY_CTRL_DISABLE);
 }
 
+struct exynos5_gpio_part1 *gpio;
 /*
  * EHCI-initialization
  * Create the appropriate control structures to manage
@@ -87,14 +118,20 @@ static void reset_usb_phy(struct exynos_usb_phy *usb)
 int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 {
 	struct exynos_usb_phy *usb;
-
+	gpio = (struct exynos5_gpio_part1 *) EXYNOS5_GPIO_PART1_BASE;
 	usb = (struct exynos_usb_phy *)samsung_get_base_usb_phy();
+
+	s5p_gpio_direction_output(&gpio->x3, 5, 0);
+	s5p_gpio_direction_output(&gpio->d1, 7, 0);
+
 	setup_usb_phy(usb);
 
-	*hccr = (struct ehci_hccr *)samsung_get_base_usb_ehci();
-	*hcor = (struct ehci_hcor *)((uint32_t) *hccr
-				+ HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
+	s5p_gpio_direction_output(&gpio->x3, 5, 1);
+	s5p_gpio_direction_output(&gpio->d1, 7, 1);
 
+	*hccr = (struct ehci_hccr *)samsung_get_base_usb_ehci();
+	*hcor = (struct ehci_hcor *)((uint32_t) hccr
+				+ HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
 	debug("Exynos5-ehci: init hccr %x and hcor %x hc_length %d\n",
 		(uint32_t)*hccr, (uint32_t)*hcor,
 		(uint32_t)HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
