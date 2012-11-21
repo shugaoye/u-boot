@@ -117,7 +117,6 @@ void ft_board_setup(void *fdt, bd_t *bd)
 
 	if ((opp_table[0] >> 16) == HB_OPP_VERSION) {
 		u32 dtb_table[2*10];
-		u32 ret;
 		u32 i;
 		u32 num_opps = opp_table[0] & 0xff;
 		for (i = 0; i < num_opps; i++) {
@@ -125,6 +124,8 @@ void ft_board_setup(void *fdt, bd_t *bd)
 			dtb_table[2 * i + 1] =
 					cpu_to_be32(opp_table[2 + 3 * i]);
 		}
+		fdt_find_and_setprop(fdt, "/cpus/cpu@0", "transition-latency",
+			cpu_to_be32(opp_table[1]), 4, 1);
 		fdt_find_and_setprop(fdt, "/cpus/cpu@0", "operating-points",
 			dtb_table, 8 * num_opps, 1);
 	}
