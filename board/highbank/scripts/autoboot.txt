@@ -10,9 +10,9 @@ bootcmd_sata=setenv boot_ifc scsi; scsi scan && run bootcmd_disk
 bootcmd_mmc=setenv boot_ifc mmc; mmc rescan && run bootcmd_disk
 bootcmd_default=run bootcmd_sata; run bootcmd_pxe
 bootcmd0=run bootcmd_setup; run bootcmd_default
-bootcmd1=run bootcmd_setup; run bootcmd_pxe; run bootcmd_default
-bootcmd2=run bootcmd_setup; run bootcmd_sata; run bootcmd_default
-bootcmd15=run bootcmd_setup; run bootcmd_mmc; run bootcmd_default
+bootcmd1=run bootcmd_setup; run bootcmd_pxe
+bootcmd2=run bootcmd_setup; run bootcmd_sata
+bootcmd15=run bootcmd_setup; run bootcmd_mmc
 localcmd=run bootcmd_sata
 bootdevice=0
 bootargs=console=ttyAMA0 root=LABEL=rootfs nosplash
