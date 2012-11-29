@@ -28,6 +28,7 @@
 /* High Level Configuration Options */
 #define CONFIG_SAMSUNG			1	/* SAMSUNG core */
 #define CONFIG_S5P			1	/* S5P Family */
+#define CONFIG_S5PC210			1	/* which is a EXYNOS4210 SoC */
 #define CONFIG_EXYNOS4210		1	/* which is a EXYNOS4210 SoC */
 #define CONFIG_ORIGEN			1	/* working with ORIGEN*/
 
@@ -176,6 +177,13 @@
 #define COPY_BL2_SIZE		0x80000
 #define BL2_START_OFFSET	((CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)/512)
 #define BL2_SIZE_BLOC_COUNT	(COPY_BL2_SIZE/512)
+
+#define CONFIG_CMD_USB
+#ifdef CONFIG_CMD_USB
+#define CONFIG_USB_OHCI
+#define CONFIG_S3C_USBD
+#define USBD_DOWN_ADDR			0xC0000000
+#endif
 
 /* Enable devicetree support */
 #define CONFIG_OF_LIBFDT
