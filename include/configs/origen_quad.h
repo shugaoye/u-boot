@@ -36,9 +36,9 @@
 #define CONFIG_EXYNOS4			/* which is in a Exynos4 series */
 #define CONFIG_EXYNOS4412		/* which is in a Exynos4412 */
 #define CONFIG_ORIGEN_QUAD		/* which is in a ORIGEN QUAD */
-#define CONFIG_BOARDNAME		"Origen"
+#define CONFIG_BOARDNAME		"OrigenQuad"
 #define CONFIG_IDENT_STRING		" for Insignal Origen"
-#define CONFIG_MACH_TYPE		3455
+#define CONFIG_MACH_TYPE		4200
 
 #define CONFIG_ARMV7            1       /* This is an ARM V7 CPU core */
 #define CONFIG_CPU_EXYNOS4X12   1       /* which is in a Exynos4X12 */
@@ -166,7 +166,7 @@
 #define CONFIG_ENV_SIZE			(16 << 10) /* 16 KB */
 #define CONFIG_ENV_OVERWRITE
 /* Default */
-#define CONFIG_BOOTCOMMAND		"fatload mmc 0 40008000 uImage; bootm 40008000"
+#define CONFIG_BOOTCOMMAND		"fatload mmc 0 40007000 uImage; bootm 40007000"
 
 /*
  * Misc
