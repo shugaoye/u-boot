@@ -58,6 +58,10 @@
 #define MACH_TYPE_SMDK5250		3774
 #define CONFIG_MACH_TYPE		MACH_TYPE_SMDK5250
 
+/* Boot configuration */
+#define BOOT_MMCSD              0x3
+#define BOOT_EMMC_4_4           0x7
+
 /* Power Down Modes */
 #define S5P_CHECK_SLEEP			0x00000BAD
 #define S5P_CHECK_DIDLE			0xBAD00000
@@ -66,6 +70,7 @@
 /* Offset for inform registers */
 #define INFORM0_OFFSET			0x800
 #define INFORM1_OFFSET			0x804
+#define INFORM3_OFFSET			0x808
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (1 << 20))
@@ -119,7 +124,9 @@
 
 /* MMC SPL */
 #define CONFIG_SPL
-#define COPY_BL2_FNPTR_ADDR	0x02020030
+#define COPY_BL2_FNPTR_ADDR		0x02020030
+#define COPY_BL2_FNPTR_ADDR_EMMC	0x02020044
+#define COPY_BL2_FNPTR_ADDR_EMMC_DONE	0x02020048
 
 /* specific .lds file */
 #define CONFIG_SPL_LDSCRIPT	"board/samsung/smdk5250/smdk5250-uboot-spl.lds"
