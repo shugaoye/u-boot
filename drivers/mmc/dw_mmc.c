@@ -331,7 +331,7 @@ static int dwmci_init(struct mmc *mmc)
 	dwmci_writel(host, DWMCI_IDINTEN, 0);
 	dwmci_writel(host, DWMCI_BMOD, 1);
 
-	fifo_size = dwmci_readl(host, DWMCI_FIFOTH);
+	fifo_size = 0x80;
 	if (host->fifoth_val)
 		fifoth_val = host->fifoth_val;
 	else
