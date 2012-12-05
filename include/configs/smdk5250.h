@@ -79,8 +79,8 @@
 /* SD/MMC configuration */
 #define CONFIG_GENERIC_MMC
 #define CONFIG_MMC
-#define CONFIG_SDHCI
-#define CONFIG_S5P_SDHCI
+#define CONFIG_DWMMC
+#define CONFIG_EXYNOS_DWMMC
 
 #define CONFIG_BOARD_EARLY_INIT_F
 

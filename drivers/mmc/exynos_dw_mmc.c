@@ -57,7 +57,7 @@ int exynos_dwmci_init(u32 regbase, int bus_width, int index)
 	host->dev_index = index;
 	host->mmc_clk = get_mmc_clk;
 
-	add_dwmci(host, 52000000, 400000, index);
+	add_dwmci(host, 52000000, 400000);
 
 	return 0;
 }
