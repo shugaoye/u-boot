@@ -199,6 +199,8 @@
 
 #define MMCPART_NOAVAILABLE	(0xff)
 #define PART_ACCESS_MASK	(0x7)
+#define BOOT_PART_ENABLE_MASK	(0x7 << 3)
+#define BOOT_ACK		(0x1 << 6)
 #define PART_SUPPORT		(0x1)
 
 struct mmc_cid {

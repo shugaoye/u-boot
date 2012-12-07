@@ -669,6 +669,20 @@ int mmc_switch_part(int dev_num, unsigned int part_num)
 			  | (part_num & PART_ACCESS_MASK));
 }
 
+int mmc_part_bootenable(int dev_num, unsigned int part_num)
+{
+	struct mmc *mmc = find_mmc_device(dev_num);
+
+	if (!mmc)
+		return -1;
+
+	return mmc_switch(mmc, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_PART_CONF,
+			  (mmc->part_config & ~(BOOT_PART_ENABLE_MASK | PART_ACCESS_MASK))
+			  | (part_num & PART_ACCESS_MASK)
+			  | ((part_num << 3) & BOOT_PART_ENABLE_MASK)
+			  | BOOT_ACK);
+}
+
 int mmc_getcd(struct mmc *mmc)
 {
 	int cd;

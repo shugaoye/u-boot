@@ -199,7 +199,7 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		print_mmc_devices('\n');
 		return 0;
 	} else if (strcmp(argv[1], "dev") == 0) {
-		int dev, part = -1;
+		int dev, part = -1, bootable = 0;
 		struct mmc *mmc;
 
 		if (argc == 2)
@@ -212,6 +212,19 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			if (part > PART_ACCESS_MASK) {
 				printf("#part_num shouldn't be larger"
 					" than %d\n", PART_ACCESS_MASK);
+				return 1;
+			}
+		} else if (argc == 5) {
+			dev = (int)simple_strtoul(argv[2], NULL, 10);
+			part = (int)simple_strtoul(argv[3], NULL, 10);
+			if (part > PART_ACCESS_MASK) {
+				printf("#part_num shouldn't be larger"
+					" than %d\n", PART_ACCESS_MASK);
+				return 1;
+			}
+			bootable = (int)simple_strtoul(argv[4], NULL, 10);
+			if (bootable < 0 || bootable > 1) {
+				printf("bootable is boolean variable \n");
 				return 1;
 			}
 		} else
@@ -231,7 +244,14 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				return 1;
 			}
 
-			if (part != mmc->part_num) {
+			if (bootable) {
+				ret = mmc_part_bootenable(dev, part);
+				if (!ret)
+					mmc->part_num = part;
+				printf("partions #%d, made bootable %s\n",
+						part, (!ret) ? "OK" : "ERROR");
+
+			} else if (part != mmc->part_num) {
 				ret = mmc_switch_part(dev, part);
 				if (!ret)
 					mmc->part_num = part;
@@ -317,6 +337,6 @@ U_BOOT_CMD(
 	"mmc erase blk# cnt\n"
 	"mmc rescan\n"
 	"mmc part - lists available partition on current mmc device\n"
-	"mmc dev [dev] [part] - show or set current mmc device [partition]\n"
+	"mmc dev [dev] [part] [bootable]- show or set current mmc device [partition] [bootable]\n"
 	"mmc list - lists available devices");
 #endif
