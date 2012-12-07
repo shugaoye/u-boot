@@ -929,9 +929,9 @@ int readline (const char *const prompt)
 int readline_into_buffer(const char *const prompt, char *buffer, int timeout)
 {
 	char *p = buffer;
+	int rc;
 #ifdef CONFIG_CMDLINE_EDITING
 	unsigned int len = CONFIG_SYS_CBSIZE;
-	int rc;
 	static int initted = 0;
 
 	/*
