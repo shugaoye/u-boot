@@ -102,6 +102,8 @@ first_cpu:
 	cmp	r1, r2			/* compare r1, r2 */
 	beq	1f			/* r0 == r1 then skip sdram init */
 
+	bl      read_om
+
 	/* init system clock */
 	bl	system_clock_init
 
@@ -133,3 +135,24 @@ exit_wakeup:
 	mov	pc, r1
 	nop
 	nop
+
+read_om:
+       /* Read booting information */
+       ldr     r0, =EXYNOS5_POWER_BASE
+       ldr     r1, [r0,#0x0]           /*OMR_OFFSET*/
+       bic     r2, r1, #0xffffffc1
+
+       /* SD/MMC BOOT */
+       cmp     r2, #0x4
+       moveq   r3, #BOOT_MMCSD
+
+       /* eMMC 4.4 BOOT */
+       cmp     r2, #0x8
+       moveq   r3, #BOOT_EMMC_4_4
+       cmp     r2, #0x28
+       moveq   r3, #BOOT_EMMC_4_4
+
+       ldr     r0, =(EXYNOS5_POWER_BASE + INFORM3_OFFSET)
+       str     r3, [r0]
+
+       mov     pc, lr

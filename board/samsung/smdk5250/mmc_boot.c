@@ -30,9 +30,18 @@
 */
 void copy_uboot_to_ram(void)
 {
-	u32 (*copy_bl2)(u32, u32, u32) = (void *) *(u32 *)COPY_BL2_FNPTR_ADDR;
+	u32 (*copy_bl2_from_mmc)(u32, u32, u32) = (void *) *(u32 *)COPY_BL2_FNPTR_ADDR;
+	u32 (*copy_bl2_from_emmc)(u32, u32) = (void *) *(u32 *)COPY_BL2_FNPTR_ADDR_EMMC;
+	u32 (*copy_bl2_from_emmc_done)() = (void *) *(u32 *)COPY_BL2_FNPTR_ADDR_EMMC_DONE;
 
-	copy_bl2(BL2_START_OFFSET, BL2_SIZE_BLOC_COUNT, CONFIG_SYS_TEXT_BASE);
+	u32 inform3 = readl(EXYNOS5_POWER_BASE + INFORM3_OFFSET);
+
+	if (inform3 == BOOT_MMCSD)
+		copy_bl2_from_mmc(BL2_START_OFFSET, BL2_SIZE_BLOC_COUNT, CONFIG_SYS_TEXT_BASE);
+	else if (inform3 == BOOT_EMMC_4_4) {
+		copy_bl2_from_emmc(BL2_SIZE_BLOC_COUNT, CONFIG_SYS_TEXT_BASE);
+		copy_bl2_from_emmc_done();
+	}
 }
 
 void board_init_f(unsigned long bootflag)
