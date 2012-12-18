@@ -202,6 +202,16 @@ static int board_i2c_init(void)
 }
 #endif
 
+#ifdef CONFIG_BOARD_LATE_INIT
+int board_late_init(void)
+{
+#ifdef CONFIG_PREBOOT
+	setenv("preboot", CONFIG_PREBOOT);
+	setenv("usbethaddr", "00:40:5c:26:0a:5b");
+#endif
+}
+#endif
+
 #ifdef CONFIG_BOARD_EARLY_INIT_F
 int board_early_init_f(void)
 {

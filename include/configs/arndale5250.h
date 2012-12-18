@@ -36,6 +36,7 @@
 #define CONFIG_ARCH_CPU_INIT
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
+#define CONFIG_BOARD_LATE_INIT
 
 /* Keep L2 Cache Disabled */
 #define CONFIG_SYS_DCACHE_OFF
@@ -111,6 +112,7 @@
 #define CONFIG_USB_EHCI_EXYNOS
 #define CONFIG_USB_STORAGE
 #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS	3
+#define CONFIG_PREBOOT                  "usb start"
 
 /* SYSFLAGS register */
 #define CONFIG_SYSFLAGS_ADDR	0x02020000
