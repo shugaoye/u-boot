@@ -32,6 +32,7 @@
 
 #include "setup.h"
 
+unsigned int OmPin;
 DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_SMC911X
@@ -65,6 +66,18 @@ static int smc9115_pre_init(void)
 int board_init(void)
 {
 	gd->bd->bi_boot_params = (PHYS_SDRAM_1 + 0x100UL);
+
+	OmPin = readl(EXYNOS5_POWER_BASE + INFORM3_OFFSET);
+
+	printf("\nChecking Boot Mode ...");
+	if (OmPin == BOOT_MMCSD) {
+		printf(" SDMMC\n");
+	} else if (OmPin == BOOT_EMMC_4_4) {
+		printf(" EMMC4.41\n");
+	} else {
+		printf(" Please check OM_pin\n");
+	}
+
 	return 0;
 }
 
@@ -132,22 +145,28 @@ int checkboard(void)
 int board_mmc_init(bd_t *bis)
 {
 	int err;
-	
+
+	err = exynos_pinmux_config(PERIPH_ID_SDMMC0, PINMUX_FLAG_8BIT_MODE);
+	if (err) {
+		debug("SDMMC0 not configured\n");
+		return err;
+	}
+
 	err = exynos_pinmux_config(PERIPH_ID_SDMMC2, PINMUX_FLAG_NONE);
 	if (err) {
 		debug("SDMMC2 not configured\n");
 		return err;
 	}
 	
-	err = exynos_dwmmc_init(2, 4);
+	if (OmPin == BOOT_EMMC_4_4) {
+		err = exynos_dwmmc_init(0, 8);
+		err = exynos_dwmmc_init(2, 4);
+	} else {
+		err = exynos_dwmmc_init(2, 4);
+		err = exynos_dwmmc_init(0, 8);
+	}
 
-        err = exynos_pinmux_config(PERIPH_ID_SDMMC0, PINMUX_FLAG_8BIT_MODE);
-        if (err) {
-                debug("SDMMC0 not configured\n");
-                return err;
-        }
-       
-        err = exynos_dwmmc_init(0, 8);
+	err = exynos_dwmmc_init(0, 8);
 
 	return err;
 }
