@@ -130,7 +130,7 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	s5p_gpio_direction_output(&gpio->d1, 7, 1);
 
 	*hccr = (struct ehci_hccr *)samsung_get_base_usb_ehci();
-	*hcor = (struct ehci_hcor *)((uint32_t) hccr
+	*hcor = (struct ehci_hcor *)((uint32_t) *hccr
 				+ HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
 	debug("Exynos5-ehci: init hccr %x and hcor %x hc_length %d\n",
 		(uint32_t)*hccr, (uint32_t)*hcor,
