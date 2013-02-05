@@ -579,6 +579,33 @@ static int do_bootm_subcommand(cmd_tbl_t *cmdtp, int flag, int argc,
 	return ret;
 }
 
+#ifdef CONFIG_BOOTM_BOOTARGS_APPEND_MAC
+static void append_mac_addr()
+{
+	char *bootarg, *ethaddr;
+	size_t bootarg_len, ethaddr_len;
+
+	ethaddr = getenv("ethaddr");
+
+	if (!ethaddr)
+		ethaddr = getenv("usbethaddr");
+
+	if (!ethaddr)
+		return;
+
+	ethaddr_len = strlen(ethaddr);
+
+	bootarg_len = strlen(getenv("bootargs")) + ethaddr_len + 6;
+
+	bootarg = malloc(bootarg_len);
+	if (!bootarg)
+		return;
+
+	sprintf(bootarg, "%s mac=%s", getenv("bootargs"), ethaddr);
+	setenv("bootargs", bootarg);
+}
+#endif
+
 /*******************************************************************/
 /* bootm - boot application image from image in memory */
 /*******************************************************************/
@@ -602,6 +629,9 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 #endif
 
+#ifdef CONFIG_BOOTM_BOOTARGS_APPEND_MAC
+	append_mac_addr();
+#endif
 	/* determine if we have a sub command */
 	if (argc > 1) {
 		char *endp;
