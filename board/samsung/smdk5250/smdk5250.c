@@ -224,9 +224,25 @@ static int board_i2c_init(void)
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
+	int i;
+	uchar mac[6];
+	unsigned int guid_high = readl(EXYNOS5_GUID_HIGH);
+	unsigned int guid_low = readl(EXYNOS5_GUID_LOW);
+
+	for (i = 0; i < 2; i++)
+		mac[i] = (guid_high >> (8 * (1 - i))) & 0xFF;
+
+	for (i = 0; i < 4; i++)
+		mac[i+2] = (guid_low >> (8 * (3 - i))) & 0xFF;
+
+	/* mark it as not multicast and outside official 80211 MAC namespace */
+	mac[0] = (mac[0] & ~0x1) | 0x2;
+
+	eth_setenv_enetaddr("ethaddr", mac);
+	eth_setenv_enetaddr("usbethaddr", mac);
+
 #ifdef CONFIG_PREBOOT
 	setenv("preboot", CONFIG_PREBOOT);
-	setenv("usbethaddr", "00:40:5c:26:0a:5b");
 #endif
 }
 #endif
