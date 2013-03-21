@@ -48,8 +48,18 @@ mon_vectors:
 1:	mrs	lr, elr_hyp
 	mov	pc, lr
 
-/* In monitor mode, set up HVBAR and SCR then return to caller in NS-SVC. */
+/*
+ * In monitor mode, fix errata, set up HVBAR and SCR then return to caller in
+ * NS-SVC.
+ */
 2:
+	/* Fix up Exynos5250 errata */
+	mrc	p15, 0, r1, c1, c0, 1
+	orr	r1, r1, #(1 &lt;&lt; 1)		@ 773022
+	orr	r1, r1, #(1 &lt;&lt; 25)		@ 774769
+	mcr	p15, 0, r1, c1, c0, 1
+	isb
+
 	mrc	p15, 0, r1, c1, c1, 0		@ SCR
 	/*
 	 * Set SCR.NS=1 (needed for setting HVBAR and also returning to NS state)
