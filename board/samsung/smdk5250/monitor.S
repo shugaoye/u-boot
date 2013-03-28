@@ -55,8 +55,8 @@ mon_vectors:
 2:
 	/* Fix up Exynos5250 errata */
 	mrc	p15, 0, r1, c1, c0, 1
-	orr	r1, r1, #(1 &lt;&lt; 1)		@ 773022
-	orr	r1, r1, #(1 &lt;&lt; 25)		@ 774769
+	orr	r1, r1, #(1 << 1)		@ 773022
+	orr	r1, r1, #(1 << 25)		@ 774769
 	mcr	p15, 0, r1, c1, c0, 1
 	isb
 
