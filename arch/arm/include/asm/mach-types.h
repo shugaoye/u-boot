@@ -242,6 +242,7 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_MX27_3DS             1430
 #define MACH_TYPE_HALIBUT              1439
 #define MACH_TYPE_TROUT                1440
+#define MACH_TYPE_GOLDFISH             1441
 #define MACH_TYPE_TCT_HAMMER           1460
 #define MACH_TYPE_HERALD               1461
 #define MACH_TYPE_SIM_ONE              1476

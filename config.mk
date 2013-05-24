@@ -189,7 +189,7 @@ endif
 # who are porting old code to latest mainline but not updating $(AR).
 ARFLAGS = $(error update your Makefile to use cmd_link_o_target and not AR)
 RELFLAGS= $(PLATFORM_RELFLAGS)
-DBGFLAGS= -g # -DDEBUG
+DBGFLAGS= -g -DDEBUG
 OPTFLAGS= -Os #-fomit-frame-pointer
 
 OBJCFLAGS += --gap-fill=0xff

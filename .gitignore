@@ -3,6 +3,12 @@
 # subdirectories here. Add them in the ".gitignore" file
 # in that subdirectory instead.
 #
+
+# Eclipse
+.cproject
+.project
+
+#
 # Normal rules
 #
 

@@ -1035,8 +1035,14 @@ int boot_get_ramdisk(int argc, char * const argv[], bootm_headers_t *images,
 	if (!rd_data) {
 		debug("## No init Ramdisk\n");
 	} else {
+		/* In goldfish, set rd_start to rd_load */
+#if CONFIG_ARCH_GOLDFISH
+		*rd_start = rd_load;
+		*rd_end = rd_load + rd_len;
+#else
 		*rd_start = rd_data;
 		*rd_end = rd_data + rd_len;
+#endif
 	}
 	debug("   ramdisk start = 0x%08lx, ramdisk end = 0x%08lx\n",
 			*rd_start, *rd_end);

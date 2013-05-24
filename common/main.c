@@ -77,6 +77,12 @@ static int      retry_time = -1; /* -1 so can call readline before main_loop */
 #define CONFIG_BOOT_RETRY_MIN CONFIG_BOOT_RETRY_TIME
 #endif
 
+#if CONFIG_ARCH_GOLDFISH
+#define BOOT_DELAY_NUM 2
+#else
+#define BOOT_DELAY_NUM 100
+#endif
+
 #ifdef CONFIG_MODEM_SUPPORT
 int do_mdm_init = 0;
 extern void mdm_init(void); /* defined in board.c */
@@ -257,7 +263,7 @@ int abortboot(int bootdelay)
 
 		--bootdelay;
 		/* delay 100 * 10ms */
-		for (i=0; !abort && i<100; ++i) {
+		for (i=0; !abort && i<BOOT_DELAY_NUM; ++i) {
 			if (tstc()) {	/* we got a key press	*/
 				abort  = 1;	/* don't auto boot	*/
 				bootdelay = 0;	/* no more delay	*/
