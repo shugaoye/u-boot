@@ -15,6 +15,38 @@
  *
  *****************************************************************************/
 
+#ifdef __BARE_METAL__
+/* remove this, when port to u-boot */
+#define uint32_t unsigned int
+#ifdef __USE_CLIB__
+int printf ( const char * format, ... );
+#define debug(fmt, args...) printf(fmt, ## args)
+#else
+#define debug(fmt, args...)
+#endif /* __USE_CLIB__ */
+struct serial_device *default_serial_console(void);
+void default_serial_puts(const char *s);
+
+struct serial_device {
+	/* enough bytes to match alignment of following func pointer */
+	char	name[16];
+
+	int	(*start)(void);
+	int	(*stop)(void);
+	void	(*setbrg)(void);
+	int	(*getc)(void);
+	int	(*tstc)(void);
+	void	(*putc)(const char c);
+	void	(*puts)(const char *s);
+	struct serial_device	*next;
+};
+#endif /* __BARE_METAL__ */
+
+struct goldfish_tty {
+	void *base;
+	int opencount;
+};
+
 /*
  * The serial controller has a 4KiB block of registers residing at 0xfe000000.
  * It consist of 5 32-bit registers.
@@ -42,7 +74,3 @@ enum {
 	GOLDFISH_TTY_CMD_READ_BUFFER    = 3,
 };
 
-struct goldfish_tty {
-	void *base;
-	int opencount;
-};

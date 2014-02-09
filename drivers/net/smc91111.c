@@ -71,7 +71,7 @@
 
 #define NO_AUTOPROBE
 
-#define SMC_DEBUG 0
+#define SMC_DEBUG 2
 
 #if SMC_DEBUG > 1
 static const char version[] =

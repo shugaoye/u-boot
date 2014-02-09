@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * serial_goldfish.c - header file for goldfish serial port
+ * serial_goldfish.c - U-Boot serial port implementation for goldfish
  *
  * Copyright (c) 2013 Roger Ye.  All rights reserved.
  * Software License Agreement
@@ -14,71 +14,102 @@
  * DAMAGES, FOR ANY REASON WHATSOEVER.
  *
  *****************************************************************************/
+#ifndef __BARE_METAL__
 #include <common.h>
 #include <serial.h>
+#include <configs/goldfish.h>
+#else
+#include <bsp.h>
+#define NULL 0
+#include <hardware.h>
+#endif
+
 #include "serial_goldfish.h"
 
-void printascii(const char *s);
+/*
+ * There are a few UART in goldfish. UART 0, UART 1 and UART 2.
+ * When emulator is running with argument -shell, UART 2 is used as standard input/output device.
+ * UART base addresses:
+ * 0 - 0xff002000
+ * 1 - 0xff011000
+ * 2 - 0xff012000
+ * */
+
 void *getbaseaddr(void);
 static struct goldfish_tty gtty = {0, 0};
 
-/*
-void default_serial_puts(const char *s)
-{
-	printascii(s);
-}
-*/
-
 static int goldfish_init(void)
 {
-	gtty.base = getbaseaddr();
+	void *base = 0;
+
+	// base = gtty.base;
+	// if(!base) {
+		/* Initialize base address as UART2 */
+		gtty.base = getbaseaddr();
+	// }
 	debug ("goldfish_init(), gtty.base=%x\n", gtty.base);
+	writel(GOLDFISH_TTY_CMD_INT_ENABLE, (void *)IO_ADDRESS(GOLDFISH_TTY2_BASE) + GOLDFISH_TTY_CMD);
+
 	return 0;
+}
+
+static int goldfish_disable_tty(void)
+{
+	writel(GOLDFISH_TTY_CMD_INT_DISABLE, (void *)IO_ADDRESS(GOLDFISH_TTY2_BASE) + GOLDFISH_TTY_CMD);
+
+	return 0;
+}
+
+static void goldfish_gets(char *s, int len)
+{
+	void *base = 0;
+
+	base = gtty.base;
+	if(!base) {
+		goldfish_init();
+		base = gtty.base;
+	}
+
+	*((uint32_t *)(base + GOLDFISH_TTY_DATA_PTR)) = (uint32_t)s;
+	*((uint32_t *)(base + GOLDFISH_TTY_DATA_LEN)) = len;
+	*((uint32_t *)(base + GOLDFISH_TTY_CMD)) = GOLDFISH_TTY_CMD_READ_BUFFER;
 }
 
 static void goldfish_putc(const char c)
 {
-	char tmp[2];
+	void *base = 0;
 
-#if 0
-	if (c == '\n') {
-		tmp[0] = '\r';
+	base = gtty.base;
+	if(!base) {
+		goldfish_init();
+		base = gtty.base;
 	}
-	else {
-		tmp[0] = c;
-	}
-#endif
 
-	tmp[0] = c;
-	tmp[1] = 0;
-	printascii(tmp);
+	if(c) {
+		*((uint32_t *)(base + GOLDFISH_TTY_PUT_CHAR)) = (uint32_t)c;
+	}
 }
 
 static int goldfish_getc(void)
 {
-	char buf[2];
+	char buf[128];
 	uint32_t count;
 	unsigned int data = 0;
 	void *base = 0;
 
 	base = gtty.base;
 	if(!base) {
-		gtty.base = getbaseaddr();
+		goldfish_init();
 		base = gtty.base;
 	}
-	debug ("goldfish_getc(), gtty.base=%x, base=%x\n", gtty.base, base);
 	if(base) {
-		count = readl(base + GOLDFISH_TTY_BYTES_READY);
-		if(count == 0) {
+		count = *((int *)(base + GOLDFISH_TTY_BYTES_READY));
+		if(count <= 0) {
+			debug ("Error: goldfish_getc(), count=%d\n", count);
 			return -1;
 		}
 
-		buf[0] = 0;
-		buf[1] = 0;
-
-		writel((uint32_t)buf, base + GOLDFISH_TTY_DATA_PTR);
-		writel(count, base + GOLDFISH_TTY_DATA_LEN);
-		writel(GOLDFISH_TTY_CMD_READ_BUFFER, base + GOLDFISH_TTY_CMD);
+		goldfish_gets(buf, 1);
 		data = buf[0];
 	}
 
@@ -92,14 +123,14 @@ static int goldfish_tstc(void)
 
 	base = gtty.base;
 	if(!base) {
-		gtty.base = getbaseaddr();
+		goldfish_init();
 		base = gtty.base;
 	}
 
 	if(base) {
-		count = readl(gtty.base + GOLDFISH_TTY_BYTES_READY);
-		if(count) {
-			debug ("goldfish_tstc(), gtty.base=%x, base=%x, count=%d\n", gtty.base, base, count);
+		count = *((int *)(base + GOLDFISH_TTY_BYTES_READY));
+		if(count < 0) {
+			debug ("Error: goldfish_tstc(), gtty.base=%x, base=%x, count=%d\n", gtty.base, base, count);
 		}
 	}
 
@@ -108,13 +139,13 @@ static int goldfish_tstc(void)
 
 static void goldfish_setbrg(void)
 {
-	default_serial_puts("goldfish_setbrg()\n");
+	debug("goldfish_setbrg()\n");
 }
 
 static struct serial_device goldfish_drv = {
 	.name	= "goldfish_serial",
 	.start	= goldfish_init,
-	.stop	= NULL,
+	.stop	= goldfish_disable_tty,
 	.setbrg	= goldfish_setbrg,
 	.putc	= goldfish_putc,
 	.puts	= default_serial_puts,
@@ -122,13 +153,24 @@ static struct serial_device goldfish_drv = {
 	.tstc	= goldfish_tstc,
 };
 
-void goldfish_initialize(void)
-{
-	default_serial_puts("goldfish_initialize()\n");
-	// serial_register(&goldfish_drv);
-}
-
 struct serial_device *default_serial_console(void)
 {
 	return &goldfish_drv;
 }
+
+void goldfish_initialize(void)
+{
+	debug("goldfish_initialize()\n");
+
+	// serial_register(&goldfish_drv);
+}
+
+#ifdef __BARE_METAL__
+void default_serial_puts(const char *s)
+{
+	struct serial_device *dev = &goldfish_drv;
+		while (*s)
+			dev->putc(*s++);
+}
+
+#endif

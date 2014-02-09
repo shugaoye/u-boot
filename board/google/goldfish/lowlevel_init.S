@@ -1,8 +1,8 @@
 /*
  * Board specific setup info
  *
- * (C) Copyright 2003, ARM Ltd.
- * Philippe Robin, <philippe.robin@arm.com>
+ * (C) Copyright 2013
+ * Roger Ye, <shugaoye@yahoo.com>
  *
  * See file CREDITS for list of people who contributed to this
  * project.

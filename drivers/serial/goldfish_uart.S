@@ -1,29 +1,27 @@
-/*
- *  linux/arch/arm/kernel/debug.S
+/******************************************************************************
  *
- *  Copyright (C) 1994-1999 Russell King
+ * goldfish_uart.S - assembly code to handle the uart interface
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
+ * Copyright (c) 2013 Roger Ye.  All rights reserved.
+ * Software License Agreement
+ * 
+ * 
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND WITH ALL FAULTS.
+ * NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT
+ * NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. The AUTHOR SHALL NOT, UNDER
+ * ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+ * DAMAGES, FOR ANY REASON WHATSOEVER.
  *
- *  32-bit debugging code
-#include <linux/linkage.h>
- */
-/*
- * This is used by architectures to keep arguments on the stack
- * untouched by the compiler by keeping them live until the end.
- * The argument stack may be owned by the assembly-language
- * caller, not the callee, and gcc doesn't always understand
- * that.
- *
- * We have the return value, and a maximum of six arguments.
- *
- * This should always be followed by a "return ret" for the
- * protection to work (ie no more work that the compiler might
- * end up needing stack temporaries for).
- */
-/* Assembly files may be compiled with -traditional .. */
+ *****************************************************************************/
+
+#ifndef __BARE_METAL__
+#include <configs/goldfish.h>
+#else
+#include <hardware.h>
+#endif
+
+#define __ASSEMBLY__
 
 #ifndef __ASSEMBLY__
 #ifndef asmlinkage_protect
@@ -78,7 +76,27 @@
 
 		.text
 
-#include "debug-macro.S"
+#define GOLDFISH_TTY_PUT_CHAR_PHYS (IO_START + GOLDFISH_TTY2_BASE)
+#define GOLDFISH_TTY_PUT_CHAR_BASE (IO_BASE + GOLDFISH_TTY2_BASE)
+
+	.macro	addruart,rx
+	@ see if the MMU is enabled and select appropriate base address
+	mrc	p15, 0, \rx, c1, c0
+	tst	\rx, #1
+	ldreq	\rx, =GOLDFISH_TTY_PUT_CHAR_PHYS
+	ldrne	\rx, =GOLDFISH_TTY_PUT_CHAR_BASE
+	.endm
+
+	.macro	senduart,rd,rx
+	teq	\rx, #0
+	strne	\rd, [\rx]
+	.endm
+
+	.macro	waituart,rd,rx
+	.endm
+
+	.macro	busyuart,rd,rx
+	.endm
 
 /*
  * Useful debugging routines

@@ -15,9 +15,14 @@
  *
  *****************************************************************************/
 
+#ifndef __BARE_METAL__
 #include <common.h>
 #include <asm/io.h>
 #include <configs/goldfish.h>
+#else
+#include <hardware.h>
+#include <bsp.h>
+#endif /* __BARE_METAL__ */
 
 /* Refer to arch/arm/mach-goldfish/include/mach/timer.h */
 enum {
@@ -32,53 +37,19 @@ enum {
 
 #define TIMER_LOAD_VAL 0xffffffff
 
-/* macro to read the 32 bit timer */
-#define READ_TIMER (*(volatile ulong *)(CONFIG_SYS_TIMERBASE+4))
-
+#ifndef __BARE_METAL__
 DECLARE_GLOBAL_DATA_PTR;
 
 #define timestamp gd->tbl
 #define lastdec gd->lastinc
-
-#define TIMER_ENABLE	(1 << 7)
-#define TIMER_MODE_MSK	(1 << 6)
-#define TIMER_MODE_FR	(0 << 6)
-#define TIMER_MODE_PD	(1 << 6)
-
-#define TIMER_INT_EN	(1 << 5)
-#define TIMER_PRS_MSK	(3 << 2)
-#define TIMER_PRS_8S	(1 << 3)
-#define TIMER_SIZE_MSK	(1 << 2)
-#define TIMER_ONE_SHT	(1 << 0)
+#else
+ulong timestamp;
+ulong lastdec;
+#endif /* __BARE_METAL__ */
 
 int timer_init (void)
 {
-	ulong	tmr_ctrl_val;
-
-	/* 1st disable the Timer */
-	tmr_ctrl_val = *(volatile ulong *)(CONFIG_SYS_TIMERBASE + 8);
-	tmr_ctrl_val &= ~TIMER_ENABLE;
-	*(volatile ulong *)(CONFIG_SYS_TIMERBASE + 8) = tmr_ctrl_val;
-
-	/*
-	 * The Timer Control Register has one Undefined/Shouldn't Use Bit
-	 * So we should do read/modify/write Operation
-	 */
-
-	/*
-	 * Timer Mode : Free Running
-	 * Interrupt : Disabled
-	 * Prescale : 8 Stage, Clk/256
-	 * Tmr Siz : 16 Bit Counter
-	 * Tmr in Wrapping Mode
-	 */
-	tmr_ctrl_val = *(volatile ulong *)(CONFIG_SYS_TIMERBASE + 8);
-	tmr_ctrl_val &= ~(TIMER_MODE_MSK | TIMER_INT_EN | TIMER_PRS_MSK | TIMER_SIZE_MSK | TIMER_ONE_SHT );
-	tmr_ctrl_val |= (TIMER_ENABLE | TIMER_PRS_8S);
-
-	*(volatile ulong *)(CONFIG_SYS_TIMERBASE + 8) = tmr_ctrl_val;
-
-	/* init the timestamp and lastdec value */
+	/* initialize the timestamp and lastdec value */
 	reset_timer_masked();
 
 	return 0;
@@ -97,56 +68,63 @@ void __udelay (unsigned long usec)
 {
 	ulong tmo, tmp;
 
-	if(usec >= 1000){		/* if "big" number, spread normalization to seconds */
-		tmo = usec / 1000;	/* start to normalize for usec to ticks per sec */
-		tmo *= CONFIG_SYS_HZ;	/* find number of "ticks" to wait to achieve target */
-		tmo /= 1000;		/* finish normalize. */
-	}else{				/* else small number, don't kill it prior to HZ multiply */
+#if 0
+	if(usec >= 1000){					/* if "big" number, spread normalization to seconds */
+		tmo = usec / 1000;				/* start to normalize for usec to ticks per sec */
+		tmo *= CONFIG_SYS_HZ;			/* find number of "ticks" to wait to achieve target */
+		tmo /= 1000;					/* finish normalize. */
+	}else{								/* else small number, don't kill it prior to HZ multiply */
 		tmo = usec * CONFIG_SYS_HZ;
 		tmo /= (1000*1000);
 	}
+#else
+	tmo = usec * CONFIG_SYS_HZ;
+#endif
 
-	tmp = get_timer (0);		/* get current timestamp */
-	if( (tmo + tmp + 1) < tmp )	/* if setting this fordward will roll time stamp */
-		reset_timer_masked ();	/* reset "advancing" timestamp to 0, set lastdec value */
+	tmp = get_timer (0);				/* get current timestamp */
+	if( (tmo + tmp + 1) < tmp ) {		/* if setting this forward will roll time stamp */
+		reset_timer_masked ();			/* reset "advancing" timestamp to 0, set lastdec value */
+	}
 	else
-		tmo += tmp;		/* else, set advancing stamp wake up time */
+		tmo += tmp;						/* else, set advancing stamp wake up time */
 
-	while (get_timer_masked () < tmo)/* loop till event */
+	while (get_timer_masked () < tmo)	/* loop till event */
 		/*NOP*/;
 }
 
 void reset_timer_masked (void)
 {
 	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
-	unsigned long rv;
+	ulong rv;
 
 	rv = readl(timer_base + TIMER_TIME_LOW);
 	rv |= (int64_t)readl(timer_base + TIMER_TIME_HIGH) << 32;
 
 	/* reset time */
-	lastdec = rv;  /* capure current decrementer value time */
-	timestamp = 0;	       /* start "advancing" time stamp from 0 */
+	lastdec = rv;  	/* capture current decrementer value time */
+	timestamp = 0;	/* start "advancing" time stamp from 0 */
 }
 
 ulong get_timer_masked (void)
 {
 	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
-	ulong now = 0;		/* current tick value */
+	ulong now = 0;				/* current tick value */
 
 	now = readl(timer_base + TIMER_TIME_LOW);
-	now |= (int64_t)readl(timer_base + TIMER_TIME_HIGH) << 32;
+	now |= (ulong)readl(timer_base + TIMER_TIME_HIGH) << 32;
 
-	if (lastdec >= now) {		/* normal mode (non roll) */
+	if (now >= lastdec) {		/* normal mode (non roll) */
 		/* normal mode */
-		timestamp += lastdec - now; /* move stamp fordward with absoulte diff ticks */
-	} else {			/* we have overflow of the count down timer */
+		timestamp += now - lastdec; /* move stamp forward with absolute diff ticks */
+		/* printf("lastdec(%u) >= now(%u), timestamp=%u\n", lastdec, now, timestamp); */
+	} else {						/* we have overflow of the count down timer */
 		/* nts = ts + ld + (TLV - now)
 		 * ts=old stamp, ld=time that passed before passing through -1
 		 * (TLV-now) amount of time after passing though -1
 		 * nts = new "advancing time stamp"...it could also roll and cause problems.
 		 */
-		timestamp += lastdec + TIMER_LOAD_VAL - now;
+		timestamp += now + TIMER_LOAD_VAL - lastdec;
+		/* printf("lastdec(%u) < now(%u) (overflow), timestamp=%u\n", lastdec, now, timestamp); */
 	}
 	lastdec = now;
 
@@ -160,6 +138,7 @@ void udelay_masked (unsigned long usec)
 	ulong endtime;
 	signed long diff;
 
+#if 0
 	if (usec >= 1000) {		/* if "big" number, spread normalization to seconds */
 		tmo = usec / 1000;	/* start to normalize for usec to ticks per sec */
 		tmo *= CONFIG_SYS_HZ;		/* find number of "ticks" to wait to achieve target */
@@ -168,6 +147,9 @@ void udelay_masked (unsigned long usec)
 		tmo = usec * CONFIG_SYS_HZ;
 		tmo /= (1000*1000);
 	}
+#else
+	tmo = usec * CONFIG_SYS_HZ;
+#endif
 
 	endtime = get_timer_masked () + tmo;
 
