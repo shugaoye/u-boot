@@ -68,18 +68,7 @@ void __udelay (unsigned long usec)
 {
 	ulong tmo, tmp;
 
-#if 0
-	if(usec >= 1000){					/* if "big" number, spread normalization to seconds */
-		tmo = usec / 1000;				/* start to normalize for usec to ticks per sec */
-		tmo *= CONFIG_SYS_HZ;			/* find number of "ticks" to wait to achieve target */
-		tmo /= 1000;					/* finish normalize. */
-	}else{								/* else small number, don't kill it prior to HZ multiply */
-		tmo = usec * CONFIG_SYS_HZ;
-		tmo /= (1000*1000);
-	}
-#else
 	tmo = usec * CONFIG_SYS_HZ;
-#endif
 
 	tmp = get_timer (0);				/* get current timestamp */
 	if( (tmo + tmp + 1) < tmp ) {		/* if setting this forward will roll time stamp */
@@ -116,7 +105,6 @@ ulong get_timer_masked (void)
 	if (now >= lastdec) {		/* normal mode (non roll) */
 		/* normal mode */
 		timestamp += now - lastdec; /* move stamp forward with absolute diff ticks */
-		/* printf("lastdec(%u) >= now(%u), timestamp=%u\n", lastdec, now, timestamp); */
 	} else {						/* we have overflow of the count down timer */
 		/* nts = ts + ld + (TLV - now)
 		 * ts=old stamp, ld=time that passed before passing through -1
@@ -124,7 +112,6 @@ ulong get_timer_masked (void)
 		 * nts = new "advancing time stamp"...it could also roll and cause problems.
 		 */
 		timestamp += now + TIMER_LOAD_VAL - lastdec;
-		/* printf("lastdec(%u) < now(%u) (overflow), timestamp=%u\n", lastdec, now, timestamp); */
 	}
 	lastdec = now;
 
@@ -138,18 +125,7 @@ void udelay_masked (unsigned long usec)
 	ulong endtime;
 	signed long diff;
 
-#if 0
-	if (usec >= 1000) {		/* if "big" number, spread normalization to seconds */
-		tmo = usec / 1000;	/* start to normalize for usec to ticks per sec */
-		tmo *= CONFIG_SYS_HZ;		/* find number of "ticks" to wait to achieve target */
-		tmo /= 1000;		/* finish normalize. */
-	} else {			/* else small number, don't kill it prior to HZ multiply */
-		tmo = usec * CONFIG_SYS_HZ;
-		tmo /= (1000*1000);
-	}
-#else
 	tmo = usec * CONFIG_SYS_HZ;
-#endif
 
 	endtime = get_timer_masked () + tmo;
 
