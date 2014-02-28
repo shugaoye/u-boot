@@ -53,7 +53,7 @@
  * Size of malloc() pool
  */
 #define CONFIG_ENV_SIZE				8192
-#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 128 * 1024)
+#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 4 * 1024 * 1024)
 
 /*
  * Hardware drivers
@@ -87,6 +87,8 @@
 #define CONFIG_CMD_NET
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_SAVEENV
+
+#define CONFIG_CMD_NAND		/* NAND support			*/
 
 /*
  * BOOTP options
@@ -152,6 +154,34 @@
 #define CONFIG_SYS_MONITOR_LEN		0x80000
 
 /*
+ * NAND configuration
+ */
+#ifdef CONFIG_CMD_NAND
+#define CONFIG_NAND_GOLDFISH
+#define CONFIG_SYS_NAND_SELF_INIT
+#define CONFIG_SYS_MAX_NAND_DEVICE	3		/* Max number of NAND devices. */
+#endif
+
+#define MTDIDS_DEFAULT          "nand0=system_nand,nand1=data_nand,nand2=cache_nand"
+#define MTDPARTS_DEFAULT        "mtdparts=system_nand:197m(system);data_nand:194m(data);cache_nand:64m(cache)"
+
+/*
+ * File system
+ */
+#define CONFIG_CMD_FAT
+#define CONFIG_CMD_EXT2
+#define CONFIG_CMD_UBI
+#define CONFIG_CMD_UBIFS
+#define CONFIG_CMD_MTDPARTS
+#define CONFIG_MTD_DEVICE
+#define CONFIG_MTD_PARTITIONS
+#define CONFIG_YAFFS2
+#define CONFIG_RBTREE
+#define CONFIG_LZO
+
+#define YAFFS2_DEBUG
+
+/*
  * goldfish IO address definition, refer to <mach/hardware.h> in goldfish Linux kernel
  * Where in virtual memory the IO devices (timers, system controllers
  * and so on)
@@ -202,10 +232,8 @@
 #define GOLDFISH_TTY2_BASE      (0x12000)
 #define GOLDFISH_smc91x_BASE    (0x13000)
 #define GOLDFISH_FB_BASE        (0x14000)
-#define GOLDFISH_EVENTS_BASE    (0x15000)
-#define GOLDFISH_NAND_BASE      (0x16000)
-#define GOLDFISH_PIPE_BASE      (0x17000)
-#define GOLDFISH_SWITCH0_BASE   (0x19000)
+#define GOLDFISH_NAND_BASE      (0x17000)
+#define GOLDFISH_SWITCH0_BASE   (0X19000)
 #define GOLDFISH_SWITCH1_BASE   (0x1a000)
 
 /* macro to get at IO space when running virtually */
