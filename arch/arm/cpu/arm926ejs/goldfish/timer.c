@@ -19,10 +19,6 @@
 #include <common.h>
 #include <asm/io.h>
 #include <configs/goldfish.h>
-#else
-#include <hardware.h>
-#include <bsp.h>
-#endif /* __BARE_METAL__ */
 
 /* Refer to arch/arm/mach-goldfish/include/mach/timer.h */
 enum {
@@ -33,7 +29,11 @@ enum {
 	TIMER_CLEAR_INTERRUPT   = 0x10,
 	TIMER_CLEAR_ALARM       = 0x14,
 };
-
+#else
+#include <hardware.h>
+#include <bsp.h>
+#include <timer.h>
+#endif /* __BARE_METAL__ */
 
 #define TIMER_LOAD_VAL 0xffffffff
 
@@ -46,6 +46,14 @@ DECLARE_GLOBAL_DATA_PTR;
 ulong timestamp;
 ulong lastdec;
 #endif /* __BARE_METAL__ */
+
+unsigned long get_millisecond(void);
+
+/*
+ * TIMER_TIME_HIGH	TIMER_TIME_LOW
+ * 0xFFFFFFFF       0XFFFFFFFF
+ *
+ * */
 
 int timer_init (void)
 {
@@ -68,7 +76,7 @@ void __udelay (unsigned long usec)
 {
 	ulong tmo, tmp;
 
-	tmo = usec * CONFIG_SYS_HZ;
+	tmo = usec / CONFIG_SYS_HZ;			/* We support millisecond accuracy */
 
 	tmp = get_timer (0);				/* get current timestamp */
 	if( (tmo + tmp + 1) < tmp ) {		/* if setting this forward will roll time stamp */
@@ -83,11 +91,9 @@ void __udelay (unsigned long usec)
 
 void reset_timer_masked (void)
 {
-	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
 	ulong rv;
 
-	rv = readl(timer_base + TIMER_TIME_LOW);
-	rv |= (int64_t)readl(timer_base + TIMER_TIME_HIGH) << 32;
+	rv = get_millisecond();
 
 	/* reset time */
 	lastdec = rv;  	/* capture current decrementer value time */
@@ -96,11 +102,9 @@ void reset_timer_masked (void)
 
 ulong get_timer_masked (void)
 {
-	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
 	ulong now = 0;				/* current tick value */
 
-	now = readl(timer_base + TIMER_TIME_LOW);
-	now |= (ulong)readl(timer_base + TIMER_TIME_HIGH) << 32;
+	now = get_millisecond();
 
 	if (now >= lastdec) {		/* normal mode (non roll) */
 		/* normal mode */
@@ -125,7 +129,7 @@ void udelay_masked (unsigned long usec)
 	ulong endtime;
 	signed long diff;
 
-	tmo = usec * CONFIG_SYS_HZ;
+	tmo = usec / CONFIG_SYS_HZ;
 
 	endtime = get_timer_masked () + tmo;
 
@@ -154,4 +158,90 @@ ulong get_tbclk (void)
 
 	tbclk = CONFIG_SYS_HZ;
 	return tbclk;
+}
+
+/*
+ * Get number of second from STARTOFTIME.
+ */
+unsigned long get_second(void)
+{
+	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
+	ulong lo, hi, rv;
+
+	lo = readl(timer_base + TIMER_TIME_LOW);
+	hi = (int64_t)readl(timer_base + TIMER_TIME_HIGH);
+
+	hi = hi * 4;
+	lo = lo >> 30;
+	rv = hi + lo;
+
+	return rv;
+}
+
+/*
+ * Get number of millisecond from STARTOFTIME.
+ */
+unsigned long get_millisecond(void)
+{
+	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
+	ulong lo, hi, rv;
+
+	lo = readl(timer_base + TIMER_TIME_LOW);
+	hi = (int64_t)readl(timer_base + TIMER_TIME_HIGH);
+
+	hi = hi << 12;
+	lo = lo >> 20;
+	rv = hi + lo;
+
+	return rv;
+}
+
+/*
+ * Goldfish specific Timer functions
+ * */
+void goldfish_set_timer(unsigned long cycles)
+{
+	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
+	unsigned long lo, hi, tmp;
+
+	lo = readl((void *)timer_base + TIMER_TIME_LOW);
+	hi = (int64_t)readl((void *)timer_base + TIMER_TIME_HIGH);
+
+	hi = hi + cycles / 4096; /* Move 12 bits left. */
+	tmp = lo + ((cycles % 4096) << 20);
+	if(lo > tmp) {
+		lo = tmp;
+		hi = hi + 1;
+	}
+	else {
+		lo = tmp;
+	}
+
+	writel(hi, (void *)timer_base + TIMER_ALARM_HIGH);
+	writel(lo, (void *)timer_base + TIMER_ALARM_LOW);
+}
+
+void goldfish_clear_timer_int(void)
+{
+	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
+
+	writel(1, (void *)timer_base + TIMER_CLEAR_INTERRUPT);
+}
+
+unsigned long goldfish_timer_read(void)
+{
+	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
+	unsigned long  rv;
+
+	rv = readl((void *)timer_base + TIMER_TIME_LOW);
+	rv |= (int64_t)readl((void *)timer_base + TIMER_TIME_HIGH) << 32;
+
+	return rv;
+}
+
+void goldfish_clear_alarm(void)
+{
+	uint32_t timer_base = IO_ADDRESS(GOLDFISH_TIMER_BASE);
+
+	writel(1, (void *)timer_base + TIMER_CLEAR_ALARM);
 }

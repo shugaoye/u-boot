@@ -79,7 +79,6 @@
 /*
  * Command line configuration.
  */
-#define CONFIG_CMD_BDI
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_FLASH
 #define CONFIG_CMD_IMI
@@ -87,8 +86,8 @@
 #define CONFIG_CMD_NET
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_SAVEENV
-
 #define CONFIG_CMD_NAND		/* NAND support			*/
+#define CONFIG_CMD_DATE
 
 /*
  * BOOTP options
@@ -180,6 +179,13 @@
 #define CONFIG_LZO
 
 #define YAFFS2_DEBUG
+
+/*
+ * RTC driver configuration
+ */
+#ifdef CONFIG_CMD_DATE
+#define CONFIG_RTC_GOLDFISH
+#endif /* CONFIG_CMD_DATE */
 
 /*
  * goldfish IO address definition, refer to <mach/hardware.h> in goldfish Linux kernel
