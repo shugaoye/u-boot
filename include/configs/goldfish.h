@@ -90,6 +90,14 @@
 #define CONFIG_CMD_DATE
 
 /*
+ * Goldfish MMC Support
+ */
+#define CONFIG_MMC			1
+#define CONFIG_CMD_MMC
+#define CONFIG_GENERIC_MMC
+#define CONFIG_GOLDFISH_MMC
+
+/*
  * BOOTP options
  */
 #define CONFIG_BOOTP_BOOTPATH
