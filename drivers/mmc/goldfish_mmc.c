@@ -14,9 +14,15 @@
  * DAMAGES, FOR ANY REASON WHATSOEVER.
  *
  *****************************************************************************/
+#ifndef __BARE_METAL__
 #include <common.h>
 #include <asm/io.h>
 #include <mmc.h>
+#include <configs/goldfish.h>
+#else
+#include <hardware.h>
+#include <bsp.h>
+#endif /* __BARE_METAL__ */
 
 #define DRIVER_NAME "goldfish_mmc"
 
@@ -103,6 +109,14 @@ struct goldfish_mmc_host {
 struct mmc g_mmc_dev;
 struct goldfish_mmc_host g_mmc_host;
 
+#define MMC_CMD_MASK	(3 << 5)		/* non-SPI command type */
+#define MMC_CMD_AC		(0 << 5)
+#define MMC_CMD_ADTC	(1 << 5)
+#define MMC_CMD_BC		(2 << 5)
+#define MMC_CMD_BCR		(3 << 5)
+#define mmc_resp_type(cmd)	((cmd)->resp_type & (MMC_RSP_PRESENT|MMC_RSP_136|MMC_RSP_CRC|MMC_RSP_BUSY|MMC_RSP_OPCODE))
+#define mmc_cmd_type(cmd)	((cmd)->resp_type & MMC_CMD_MASK)
+
 static void mmc_prepare_data(struct goldfish_mmc_host *host, struct mmc_data *data)
 {
 	debug(" mmc_prepare_data called\n");
@@ -114,7 +128,16 @@ static int mmc_send_cmd(struct mmc *my_mmc_dev, struct mmc_cmd *cmd,
 	struct goldfish_mmc_host *host = (struct goldfish_mmc_host *)my_mmc_dev->priv;
 	int result;
 
+	uint cmdreg;
+	uint resptype;
+	uint cmdtype;
+
+
 	debug(" mmc_send_cmd called\n");
+
+	resptype = 0;
+	cmdtype = 0;
+
 
 	if (result < 0)
 		return result;
@@ -122,7 +145,51 @@ static int mmc_send_cmd(struct mmc *my_mmc_dev, struct mmc_cmd *cmd,
 	if (data)
 		mmc_prepare_data(host, data);
 
-	debug("cmd->arg: %08x\n", cmd->cmdarg);
+	/* Our hardware needs to know exact type */
+	switch (mmc_resp_type(cmd)) {
+	case MMC_RSP_NONE:
+		break;
+	case MMC_RSP_R1:
+	case MMC_RSP_R1b:
+		/* resp 1, 1b, 6, 7 */
+		resptype = 1;
+		break;
+	case MMC_RSP_R2:
+		resptype = 2;
+		break;
+	case MMC_RSP_R3:
+		resptype = 3;
+		break;
+	default:
+		debug("mmc_send_cmd: Invalid response type: %04x\n", mmc_resp_type(cmd));
+		break;
+	}
+
+	if (mmc_cmd_type(cmd) == MMC_CMD_ADTC) {
+		cmdtype = OMAP_MMC_CMDTYPE_ADTC;
+	} else if (mmc_cmd_type(cmd) == MMC_CMD_BC) {
+		cmdtype = OMAP_MMC_CMDTYPE_BC;
+	} else if (mmc_cmd_type(cmd) == MMC_CMD_BCR) {
+		cmdtype = OMAP_MMC_CMDTYPE_BCR;
+	} else {
+		cmdtype = OMAP_MMC_CMDTYPE_AC;
+	}
+
+	cmdreg = cmd->cmdidx | (resptype << 8) | (cmdtype << 12);
+
+	/* if (host->bus_mode == MMC_BUSMODE_OPENDRAIN)
+		cmdreg |= 1 << 6; */
+
+	if (cmd->resp_type & MMC_RSP_BUSY)
+		cmdreg |= 1 << 11;
+
+	if (data && !(data->flags & MMC_DATA_WRITE))
+		cmdreg |= 1 << 15;
+
+	GOLDFISH_MMC_WRITE(host, MMC_ARG, cmd->cmdarg);
+	GOLDFISH_MMC_WRITE(host, MMC_CMD, cmdreg);
+
+	debug("cmd->cmdarg: %08x\n", cmd->cmdarg);
 
 	if ((cmd->resp_type & MMC_RSP_136) && (cmd->resp_type & MMC_RSP_BUSY))
 		return -1;
@@ -172,6 +239,18 @@ int board_mmc_init(bd_t *bd)
 	my_mmc_dev->set_ios = mmc_set_ios;
 	my_mmc_dev->init = mmc_core_init;
 	my_mmc_dev->getcd = goldfish_mmc_getcd;
+	my_mmc_dev->f_min = 400000;
+	my_mmc_dev->f_max = 24000000;
+	my_mmc_dev->host_caps = MMC_MODE_4BIT;
+
+	host->reg_base = (void *)IO_ADDRESS(GOLDFISH_MMC_BASE);
+
+	/*
+	GOLDFISH_MMC_WRITE(host, MMC_SET_BUFFER, host->phys_base);
+	GOLDFISH_MMC_WRITE(host, MMC_INT_ENABLE,
+		MMC_STAT_END_OF_CMD | MMC_STAT_END_OF_DATA | MMC_STAT_STATE_CHANGE |
+		MMC_STAT_CMD_TIMEOUT);
+	*/
 
 	mmc_register(my_mmc_dev);
 
