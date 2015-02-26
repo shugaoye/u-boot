@@ -111,7 +111,7 @@
 #define CONFIG_BOOTARGS "qemu.gles=1 qemu=1 console=ttyS0 android.qemud=ttyS1 androidboot.console=ttyS2 android.checkjni=1 ndns=1 root=/dev/ram mem=512M rdinit=/sbin/init"
 */
 #define CONFIG_BOOTARGS "qemu.gles=1 qemu=1 console=ttyS0 android.qemud=ttyS1 androidboot.console=ttyS2 android.checkjni=1 ndns=1"
-#define CONFIG_BOOTCOMMAND "bootm 0x210000 0x410000"
+#define CONFIG_BOOTCOMMAND "ydevconfig sys 0 0x0 0x7e8 ; ymount sys ; yrdm sys/ramdisk.uimg 0x410000 ; yrdm sys/zImage.uimg 0x210000 ; yumount sys ; bootm 0x210000 0x410000"
 #define CONFIG_INITRD_TAG 1
 
 /*
@@ -125,7 +125,7 @@
 #define CONFIG_SYS_LONGHELP			/* undef to save memory */
 #define CONFIG_SYS_CBSIZE	256		/* Console I/O Buffer Size */
 /* Monitor Command Prompt	 */
-# define CONFIG_SYS_PROMPT	"Goldfish # "
+# define CONFIG_SYS_PROMPT	"armemu # "
 /* Print Buffer Size */
 #define CONFIG_SYS_PBSIZE	\
 			(CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)

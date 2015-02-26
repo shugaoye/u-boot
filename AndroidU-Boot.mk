@@ -35,10 +35,10 @@ $(U-BOOT_OUT):
 	mkdir -p $(U-BOOT_OUT)
 
 $(U-BOOT_CONFIG): $(U-BOOT_OUT)
-#	$(MAKE) -C kernel O=../$(U-BOOT_OUT) ARCH=arm CROSS_COMPILE=arm-eabi- $(KERNEL_DEFCONFIG)
 	export BUILD_DIR=../$(U-BOOT_OUT); cd $(TARGET_U_BOOT_SOURCE); $(MAKE) $(TARGET_U_BOOT_CONFIG) arch=ARM CROSS_COMPILE=arm-none-eabi-
 
 $(TARGET_PREBUILT_INT_U-BOOT): $(U-BOOT_OUT) $(U-BOOT_CONFIG)
-#	$(MAKE) -C kernel O=../$(U-BOOT_OUT) ARCH=arm CROSS_COMPILE=arm-eabi-
 	export BUILD_DIR=../$(U-BOOT_OUT); cd $(TARGET_U_BOOT_SOURCE); $(MAKE) all arch=ARM CROSS_COMPILE=arm-none-eabi-
+#	mkimage -A arm -C none -O linux -T kernel -d $(PRODUCT_OUT)/obj/KERNEL_OBJ/arch/arm/boot/zImage -a 0x00010000 -e 0x00010000 $(PRODUCT_OUT)/system/zImage.uimg
+#	mkimage -A arm -C none -O linux -T ramdisk -d $(PRODUCT_OUT)/ramdisk.img -a 0x00800000 -e 0x00800000 $(PRODUCT_OUT)/system/rootfs.uimg
 
