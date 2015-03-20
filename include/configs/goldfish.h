@@ -110,8 +110,8 @@
 				"netdev=25,0,0xf1010000,0xf1010010,eth0"
 #define CONFIG_BOOTARGS "qemu.gles=1 qemu=1 console=ttyS0 android.qemud=ttyS1 androidboot.console=ttyS2 android.checkjni=1 ndns=1 root=/dev/ram mem=512M rdinit=/sbin/init"
 */
-#define CONFIG_BOOTARGS "qemu.gles=1 qemu=1 console=ttyS0 android.qemud=ttyS1 androidboot.console=ttyS2 android.checkjni=1 ndns=1"
-#define CONFIG_BOOTCOMMAND "ydevconfig sys 0 0x0 0x7e8 ; ymount sys ; yrdm sys/ramdisk.uimg 0x410000 ; yrdm sys/zImage.uimg 0x210000 ; yumount sys ; bootm 0x210000 0x410000"
+#define CONFIG_BOOTARGS "qemu.gles=0 qemu=1 console=ttyS0 android.qemud=ttyS1 androidboot.console=ttyS2 android.checkjni=1 ndns=1"
+#define CONFIG_BOOTCOMMAND "ydevconfig sys 0 0x0 0x7f0 ; ymount sys ; yrdm sys/ramdisk.uimg 0x610000 ; yrdm sys/zImage.uimg 0x210000 ; yumount sys ; bootm 0x210000 0x610000"
 #define CONFIG_INITRD_TAG 1
 
 /*
